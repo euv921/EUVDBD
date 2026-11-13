@@ -58,3 +58,26 @@ EUVDBD/
 - Only folders containing `index.html` are listed on the homepage.
 - Folder slugs must match `[a-z0-9][a-z0-9-]*` (lowercase letters, numbers, hyphens).
 - Game URLs are stable and version-independent (e.g. `/games/dot-battle/`).
+
+## Deployment and troubleshooting
+
+Pages publishes from **main / (root)** (Settings → Pages → Deploy from a branch).
+Keep that source when using this workflow. The catalog workflow explicitly requests
+another Pages build after generation because commits made with `GITHUB_TOKEN`
+do not trigger a Pages build themselves. It needs `contents: write` and
+`pages: write`; repository or organization policy must allow these permissions.
+If catalog updates fail, check the workflow logs and branch protection rules.
+If a policy prevents bot commits, use a custom Pages Actions deployment that
+runs `python3 scripts/update_game_index.py` before uploading its Pages artifact;
+that alternative generates the catalog at build time rather than committing it.
+
+The generator lives in `scripts/update_game_index.py`. Run it from the repository
+root for a local catalog update. It scans immediate game folders, skips invalid
+slugs, and falls back to default metadata for missing or malformed `game.json`.
+It writes games in slug order with stable formatting. Concurrent pushes are
+handled by fetching main and regenerating before each push attempt.
+
+Dot Battle is the supplied v31 file, preserved byte for byte: 15 rounds,
+maximum choices 10/20/50/100, default maximum 20, default Solid Color.
+Its continuous speech recognition and diagnostics have not been changed.
+Real iPad Safari microphone and recognition behavior still needs a device check.
