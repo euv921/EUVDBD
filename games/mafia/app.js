@@ -248,8 +248,9 @@
     paused = false; confirmAction = null;
     unlockAudio();
     const roles = shuffledRoles(Number($('playerCount').value));
-    const raw = Array.from($('names').querySelectorAll('input')).map((input, i) => input.value.trim() || t('Player {seat}', {seat: i + 1}));
-    players = raw.map((name, id) => ({id, name: raw.filter(n => n.toLowerCase() === name.toLowerCase()).length > 1 ? t('{name} (seat {seat})', {name, seat: id + 1}) : name, role: roles[id], alive: true}));
+    const nameInputs = Array.from($('names').querySelectorAll('input'));
+    const raw = nameInputs.map((input, i) => input.value.trim() || t('Player {seat}', {seat: i + 1}));
+    players = raw.map((name, id) => ({id, name: raw.filter(n => n.toLowerCase() === name.toLowerCase()).length > 1 ? t('{name} (seat {seat})', {name, seat: id + 1}) : name, role: roles[id], alive: true, defaultName: !nameInputs[id].value.trim()}));
     secondsPerChoice = Number($('choiceTime').value);
     night = 0; revealIndex = 0; attack = null; protection = null;
     $('setup').hidden = true; $('table').hidden = false; $('newGame').hidden = false;
@@ -278,9 +279,11 @@
   }
   function showHandoff() {
     startStage('reveal', null);
-    panel('✉', t('PRIVATE ROLE · {index} / {count}', {index: revealIndex + 1, count: players.length}), t('Pass to {name}', {name: players[revealIndex].name}), t('Everyone else, look away. Make sure only this player can see the screen.'));
+    const player = players[revealIndex];
+    const name = player.defaultName ? g('Player {seat}', {seat: player.id + 1}) : player.name;
+    panel('✉', g('PRIVATE ROLE · {index} / {count}', {index: revealIndex + 1, count: players.length}), g('Pass to {name}', {name}), g('Everyone else, look away. Make sure only this player can see the screen.'));
     actions(button(t('Reveal my role'), showRole));
-    host.append(el('p', t('Roles are never read aloud.'), 'privacy'));
+    host.append(displayText('p', g('Roles are never read aloud.'), 'privacy'));
   }
   function showRole() {
     startStage('reveal', null);
