@@ -5,5 +5,12 @@
     "description": "Count the dots and buzz in before your friends!",
     "emoji": "🔴",
     "url": "games/dot-battle/"
+  },
+  {
+    "slug": "mafia",
+    "title": "Mafia · The Night Host",
+    "description": "Close your eyes. A spoken host guides secret roles, Mafia attacks, Doctor saves, and morning reveals.",
+    "emoji": "🌙",
+    "url": "games/mafia/"
   }
 ]
