@@ -129,3 +129,19 @@ buttons. Muting the corresponding checkbox also resets its preview button.
 During an active night, pause before testing so preview controls do not
 interrupt the game host. A second music tap also cancels a pending audio-unlock
 request, preventing delayed playback after stopping.
+
+## Defaults and remembered names
+
+Night volume uses five levels: **1 = 10%**, **2 = 20%**, **3 = 30%**,
+**4 = 50%**, **5 = 100%**. Level 3 is the default on page load. Use the
+Night music checkbox to mute. The selected level stays on same-settings replay.
+
+Game language defaults to English only if no valid previous choice is saved;
+otherwise the prior English, Simplified Chinese, or bilingual choice is restored.
+
+Player names are saved by seat in browser localStorage (`mafia-player-names`),
+not cookies, and restored on later visits. Increasing/decreasing the player
+count preserves every seat's name, including seats temporarily hidden. Clearing
+a name explicitly saves it as blank. Only names and preferences are stored,
+not secret roles or an active game. If storage is blocked, names still survive
+player-count changes during the current visit.

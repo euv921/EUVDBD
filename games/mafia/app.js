@@ -3,10 +3,16 @@
   const $ = id => document.getElementById(id);
   const host = $('host');
   let gameLanguage = 'en';
+  const savedNames = Array(8).fill('');
+  const volumeRatio = () => ({1: 0.1, 2: 0.2, 3: 0.3, 4: 0.5, 5: 1})[$('nightVolume').value] ?? 0.3;
   const normalizeLanguage = value => ['zh-CN', 'bilingual'].includes(value) ? value : 'en';
   try {
     const legacy = localStorage.getItem('mafia-language');
     gameLanguage = normalizeLanguage(localStorage.getItem('mafia-game-language') ?? legacy);
+  } catch (_) {}
+  try {
+    const names = JSON.parse(localStorage.getItem('mafia-player-names') || '[]');
+    if (Array.isArray(names)) names.slice(0, 8).forEach((name, i) => { if (typeof name === 'string') savedNames[i] = name.slice(0, 24); });
   } catch (_) {}
   function translate(key, values, locale) {
     const text = locale === 'zh-CN' ? window.MafiaTranslations[key] || key : key;
@@ -161,17 +167,17 @@
     musicGain.gain.cancelScheduledValues(t);
     const playing = $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
     if (playing) ensureMusic();
-    musicGain.gain.setTargetAtTime(playing ? 0.4 * Number($('nightVolume').value) / 100 : 0, t, 0.15);
+    musicGain.gain.setTargetAtTime(playing ? 0.4 * volumeRatio() : 0, t, 0.15);
   }
   function chime() {
-    if (!audio || !$('sound').checked || Number($('nightVolume').value) === 0) return;
+    if (!audio || !$('sound').checked) return;
     try {
       [392, 523.25, 659.25].forEach((frequency, i) => {
         const oscillator = audio.createOscillator(), gain = audio.createGain();
         const start = audio.currentTime + i * 0.12;
         oscillator.frequency.value = frequency;
         gain.gain.setValueAtTime(0, start);
-        gain.gain.linearRampToValueAtTime(Math.max(0.0001, 0.12 * Number($('nightVolume').value) / 100), start + 0.03);
+        gain.gain.linearRampToValueAtTime(Math.max(0.0001, 0.12 * volumeRatio()), start + 0.03);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
         oscillator.connect(gain); gain.connect(audio.destination);
         chimeOscillators.add(oscillator);
@@ -240,14 +246,18 @@
     }
     tick(); interval = setInterval(tick, 200);
   }
+  function rememberNames() {
+    $('names').querySelectorAll('input').forEach((input, i) => { savedNames[i] = input.value.slice(0, 24); });
+    try { localStorage.setItem('mafia-player-names', JSON.stringify(savedNames)); } catch (_) {}
+  }
   function updateNames() {
-    const old = Array.from($('names').querySelectorAll('input')).map(n => n.value);
+    rememberNames();
     $('names').replaceChildren();
     for (let i = 0; i < Number($('playerCount').value); i++) {
       const label = el('label', t('Seat {seat}', {seat: i + 1})), input = el('input');
       input.type = 'text'; input.maxLength = 24; input.autocomplete = 'off';
       input.name = `player-${i + 1}`; input.placeholder = t('Player {seat}', {seat: i + 1});
-      input.setAttribute('aria-label', t('Seat {seat} name', {seat: i + 1})); input.value = old[i] || '';
+      input.setAttribute('aria-label', t('Seat {seat} name', {seat: i + 1})); input.value = savedNames[i];
       label.append(input); $('names').append(label);
     }
     const villagers = Number($('playerCount').value) - 2;
@@ -285,6 +295,7 @@
     return roles;
   }
   function deal() {
+    rememberNames();
     clearTimers(); stopSpeech(); stopChime(); stopPreview();
     paused = false; confirmAction = null;
     unlockAudio();
@@ -507,6 +518,8 @@
     stopSpeech(); $('audioNote').textContent = '';
     try { localStorage.setItem('mafia-game-language', gameLanguage); } catch (_) {}
   });
+  $('names').addEventListener('input', rememberNames);
+  $('names').addEventListener('change', rememberNames);
   $('playerCount').addEventListener('change', updateNames);
   $('setupForm').addEventListener('submit', event => { event.preventDefault(); deal(); });
   $('newGame').addEventListener('click', () => {
@@ -539,20 +552,13 @@
     const savedTrack = localStorage.getItem('mafia-music-track');
     if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
   } catch (_) {}
-  $('nightVolume').addEventListener('input', () => {
-    $('nightVolumeValue').textContent = `${$('nightVolume').value}%`;
-    if (Number($('nightVolume').value) === 0) stopChime();
-    ambience();
-  });
+  $('nightVolume').addEventListener('change', ambience);
   $('testSound').addEventListener('click', async () => {
     if (musicPreviewActive) {
       stopPreview(); ambience(); $('audioNote').textContent = 'Music preview stopped.'; return;
     }
     if (isNight() && !paused) {
       $('audioNote').textContent = 'Pause the night before testing music. Use Night music to mute the game soundtrack.'; return;
-    }
-    if (Number($('nightVolume').value) === 0) {
-      $('audioNote').textContent = 'Night volume is 0%. Raise it to hear the test.'; return;
     }
     $('sound').checked = true;
     setMusicPreview(true);

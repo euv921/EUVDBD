@@ -8,3 +8,5 @@
 .soundbar .volume-control{display:flex;align-items:center;gap:8px}.soundbar input[type="range"]{width:90px;height:24px;accent-color:var(--gold)}.volume-control output{min-width:30px;font-variant-numeric:tabular-nums}
 
 .soundbar .music-choice{display:flex;align-items:center;gap:8px}.music-choice select{width:145px;min-height:36px;padding:6px 9px;font-size:12px}
+
+.volume-control select{width:62px;min-height:36px;padding:6px 9px;font-size:12px}
