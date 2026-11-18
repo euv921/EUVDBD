@@ -37,3 +37,14 @@ look at the screen or touch a night-choice button. It cannot prevent peeking.
 
 Files are self-contained within this folder. `game.json` lets the existing library
 workflow discover the game without editing the homepage or hardcoding a catalog.
+
+## Replay and random roles
+
+At the end, **Play again · same settings** immediately deals fresh secret roles
+using the same player count, names, turn time, spoken-host setting, and sound
+setting. **Change settings** returns to the setup form.
+
+Every deal uses a Fisher–Yates shuffle driven by `crypto.getRandomValues`, with
+rejection sampling to avoid modulo bias. Deals are independent: the same person
+can receive the same role several times. For three players, each role has a
+1-in-3 chance at each seat on every deal. The game does not force role rotation.

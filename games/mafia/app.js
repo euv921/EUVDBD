@@ -167,12 +167,18 @@
     do { crypto.getRandomValues(data); } while (data[0] >= limit);
     return data[0] % max;
   }
-  function deal() {
-    unlockAudio();
-    const roles = ['Mafia', 'Doctor', ...Array(Number($('playerCount').value) - 2).fill('Villager')];
+  function shuffledRoles(count) {
+    const roles = ['Mafia', 'Doctor', ...Array(count - 2).fill('Villager')];
     for (let i = roles.length - 1; i > 0; i--) {
       const j = randomBelow(i + 1); [roles[i], roles[j]] = [roles[j], roles[i]];
     }
+    return roles;
+  }
+  function deal() {
+    clearTimers(); stopSpeech(); stopChime();
+    paused = false; confirmAction = null;
+    unlockAudio();
+    const roles = shuffledRoles(Number($('playerCount').value));
     const raw = Array.from($('names').querySelectorAll('input')).map((input, i) => input.value.trim() || `Player ${i + 1}`);
     players = raw.map((name, id) => ({id, name: raw.filter(n => n.toLowerCase() === name.toLowerCase()).length > 1 ? `${name} (seat ${id + 1})` : name, role: roles[id], alive: true}));
     secondsPerChoice = Number($('choiceTime').value);
@@ -211,7 +217,12 @@
     startStage('reveal', null);
     const p = players[revealIndex];
     panel(p.role === 'Mafia' ? '♠' : p.role === 'Doctor' ? '✚' : '⌂', 'FOR YOUR EYES ONLY', p.name);
-    host.append(el('div', p.role.toUpperCase(), 'private-role'), el('p', roleHelp[p.role]));
+    const instructions = players.length === 3 ? {
+      Mafia: 'At night, tap one other living player to attack. If anyone dies, you win. The game ends after one night, with no discussion or voting.',
+      Doctor: 'At night, tap any living player to save, including yourself. If nobody dies, the Mafia loses. The game ends after one night, with no discussion or voting.',
+      Villager: 'Keep your eyes closed all night. If nobody dies, you win and the Mafia loses. The game ends at dawn. There is no discussion or voting round.'
+    }[p.role] : roleHelp[p.role];
+    host.append(el('div', p.role.toUpperCase(), 'private-role'), el('p', instructions));
     actions(button('Hide & continue', () => {
       revealIndex++;
       if (revealIndex < players.length) showHandoff(); else ready();
@@ -337,7 +348,8 @@
       const row = el('li'); row.append(el('span', p.name), el('strong', p.role)); list.append(row);
     });
     host.append(list);
-    actions(button('Play again', reset));
+    actions(button('Play again · same settings', deal), button('Change settings', reset, 'secondary'));
+    host.append(el('p', 'Play again keeps your players, names, and options, and randomly deals fresh secret roles. Random roles can repeat.', 'privacy'));
   }
   function ask(title, text, action) {
     confirmAction = action;
