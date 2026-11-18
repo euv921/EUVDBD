@@ -97,8 +97,7 @@ labels are localized; custom names remain as entered. Buttons stay English.
 bass line, and loops continuously through the night. No external audio download
 or streaming service is required: `music.js` renders the selected song locally.
 
-Choose **Track**, adjust **Night volume**, and use **Test music** for a six-second
-preview. The track choice is remembered on this device when storage is available.
+Choose **Track**, adjust **Night volume**, and tap **Test music** to start a preview and tap **Stop music** to stop it. The track choice is remembered on this device when storage is available.
 Same-settings replay keeps the track and volume. Music fades out during daytime,
 pause, mute, or reset, and remains separate from **Spoken host**. Stage chimes
 remain available. If audio is silent, check device media volume, the output
@@ -117,3 +116,16 @@ ordinary playback and may still require Silent Mode to be turned off. No
 microphone permission or silent looping media workaround is used. Actual
 hardware-switch behavior needs a check on an iPhone; automated desktop tests
 verify the playback request and unsupported-browser fallback.
+
+## Preview buttons
+
+**Test music** toggles to **Stop music** and loops until tapped again. **Test voice**
+toggles to **Stop voice** while the sample is playing; tap again to cancel all
+queued speech, including the Chinese part of a bilingual sample. When the voice
+sample ends naturally, the button resets. The two previews are independent.
+
+Starting a game phase, pausing, or resetting cancels previews and resets their
+buttons. Muting the corresponding checkbox also resets its preview button.
+During an active night, pause before testing so preview controls do not
+interrupt the game host. A second music tap also cancels a pending audio-unlock
+request, preventing delayed playback after stopping.

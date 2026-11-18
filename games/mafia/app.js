@@ -35,7 +35,8 @@
   let attack = null, protection = null, secondsPerChoice = 20;
   let timeouts = [], interval = null, paused = false, resumeStage = null;
   let confirmAction = null, audio = null, musicGain = null;
-  let previewUntil = 0, previewTimer = null;
+  let previewUntil = 0, musicPreviewActive = false, musicPreviewRequest = 0;
+  let voicePreviewActive = false, voicePreviewTimer = null;
   let musicSource = null, playingTrack = null;
   const musicBuffers = new Map();
   let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
@@ -53,10 +54,11 @@
     node.addEventListener('click', action);
     return node;
   }
-  function say(message) {
+  function say(message, test = false) {
     stopSpeech();
     if (!$('voice').checked || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
     const token = speechToken;
+    if (test) setVoicePreview(true);
     const messages = Array.isArray(message) ? message : [message];
     const parts = messages.flatMap(part => gameLocales().map(locale => ({locale, text: translate(part.speechKey, part.speechValues, locale)})));
     const voices = speechSynthesis.getVoices();
@@ -74,7 +76,7 @@
       if (locale === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
       if (voice) utterance.voice = voice;
       let finished = false;
-      const finish = () => { if (!finished && token === speechToken) { finished = true; speechPending = Math.max(0, speechPending - 1); } };
+      const finish = () => { if (!finished && token === speechToken) { finished = true; speechPending = Math.max(0, speechPending - 1); if (speechPending === 0 && test) { clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false); } } };
       utterance.onend = finish;
       utterance.onerror = event => {
         finish();
@@ -91,11 +93,18 @@
         }
       });
     };
+    if (test) voicePreviewTimer = setTimeout(() => { if (token === speechToken && voicePreviewActive) stopSpeech(); }, Math.max(1000, speechUntil - performance.now() + 2000));
     if (navigator.userActivation?.isActive) speak();
     else speechTimer = setTimeout(speak, 80);
   }
+  function setVoicePreview(active) {
+    voicePreviewActive = active;
+    $('testVoice').textContent = active ? 'Stop voice ■' : 'Test voice ♪';
+    $('testVoice').setAttribute('aria-pressed', String(active));
+  }
   function stopSpeech() {
     speechToken++; speechPending = 0; speechUntil = 0;
+    clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false);
     clearTimeout(speechTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
@@ -171,7 +180,12 @@
       });
     } catch (_) { /* Silent mode remains fully playable. */ }
   }
-  function stopPreview() { clearTimeout(previewTimer); previewTimer = null; previewUntil = 0; }
+  function setMusicPreview(active) {
+    musicPreviewActive = active;
+    $('testSound').textContent = active ? 'Stop music ■' : 'Test music ♪';
+    $('testSound').setAttribute('aria-pressed', String(active));
+  }
+  function stopPreview() { musicPreviewRequest++; previewUntil = 0; setMusicPreview(false); }
   function stopChime() {
     chimeOscillators.forEach(oscillator => { try { oscillator.stop(); } catch (_) {} });
     chimeOscillators.clear();
@@ -182,7 +196,7 @@
   }
   function later(fn, ms) { timeouts.push(setTimeout(fn, ms)); }
   function startStage(nextPhase, resume) {
-    clearTimers(); stopSpeech();
+    clearTimers(); stopSpeech(); stopPreview();
     phase = nextPhase; resumeStage = resume;
     host.replaceChildren();
     document.body.classList.toggle('daytime', ['morning', 'vote', 'after-vote', 'end'].includes(phase));
@@ -531,30 +545,39 @@
     ambience();
   });
   $('testSound').addEventListener('click', async () => {
+    if (musicPreviewActive) {
+      stopPreview(); ambience(); $('audioNote').textContent = 'Music preview stopped.'; return;
+    }
+    if (isNight() && !paused) {
+      $('audioNote').textContent = 'Pause the night before testing music. Use Night music to mute the game soundtrack.'; return;
+    }
     if (Number($('nightVolume').value) === 0) {
       $('audioNote').textContent = 'Night volume is 0%. Raise it to hear the test.'; return;
     }
     $('sound').checked = true;
-    if (!await unlockAudio()) return;
-    stopPreview(); previewUntil = performance.now() + 6000;
+    setMusicPreview(true);
+    const request = ++musicPreviewRequest;
+    const started = await unlockAudio();
+    if (request !== musicPreviewRequest) return;
+    if (!started) { stopPreview(); ambience(); return; }
+    previewUntil = Infinity;
     ambience();
-    $('audioNote').textContent = `Playing a 6-second preview of ${window.MafiaMusic.tracks[$('musicTrack').value].title}. Adjust Night volume if needed.`;
-    previewTimer = setTimeout(() => { previewUntil = 0; ambience(); previewTimer = null; }, 6000);
+    $('audioNote').textContent = `Previewing ${window.MafiaMusic.tracks[$('musicTrack').value].title}. Tap Stop music to stop.`;
   });
   $('testVoice').addEventListener('click', () => {
+    if (voicePreviewActive) {
+      stopSpeech(); $('audioNote').textContent = 'Voice preview stopped.'; return;
+    }
+    if (isNight() && !paused) {
+      $('audioNote').textContent = 'Pause the night before testing the voice.'; return;
+    }
     unlockAudio();
     if (!('speechSynthesis' in window)) {
-      $('audioNote').textContent = t('Spoken voices are unavailable here. All host instructions are shown on screen.');
-      return;
+      $('audioNote').textContent = t('Spoken voices are unavailable here. All host instructions are shown on screen.'); return;
     }
     $('voice').checked = true;
-    $('audioNote').textContent = t('You should hear the host. If not, raise your device volume. Written instructions always remain available.');
-    // Never interrupt an active role prompt or announce a private role.
-    if (isNight() && !paused) {
-      $('audioNote').textContent = t('Pause the night before testing the voice.');
-      return;
-    }
-    say(g('Welcome to Mafia. I will be your host. When night falls, close your eyes and listen carefully.'));
+    $('audioNote').textContent = 'Tap Stop voice to stop the sample. It also stops when the sample finishes.';
+    say(g('Welcome to Mafia. I will be your host. When night falls, close your eyes and listen carefully.'), true);
   });
   if (!('speechSynthesis' in window)) {
     $('voice').checked = false; $('voice').disabled = true;
