@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121826">
+<title>Mafia · The Night Host</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="../../" aria-label="Back to game library">← Library</a>
+  <span class="brand">MAFIA <span>THE NIGHT HOST</span></span>
+  <button id="newGame" class="quiet" type="button" hidden>New game</button>
+</header>
+<main>
+<section id="setup" class="setup">
+  <div class="eyebrow">ONE TABLET. EVERYONE PLAYS.</div>
+  <div class="moon" aria-hidden="true">☾</div>
+  <h1>A quiet town.<br>A secret among you.</h1>
+  <p class="intro">Your tablet is the host. Listen, close your eyes, and discover who you can trust.</p>
+  <form id="setupForm" class="setup-card">
+    <div class="form-row">
+      <label>Players <select id="playerCount"><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+      <label>Time to choose <select id="choiceTime"><option value="15">15 seconds</option><option value="20" selected>20 seconds</option><option value="30">30 seconds</option></select></label>
+    </div>
+    <div id="names" class="names"></div>
+    <p class="roles-line">Each night turn includes extra time for the spoken prompt.</p>
+    <p class="roles-line">1 Mafia <span>·</span> 1 Doctor <span>·</span> <span id="villagerCount">2 Villagers</span></p>
+    <button class="primary wide" type="submit">Deal secret roles <span aria-hidden="true">→</span></button>
+  </form>
+  <details class="howto"><summary>How to play</summary>
+    <ol><li>Take turns looking at your secret role. Hide it before passing the tablet.</li><li>Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.</li><li>The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.</li><li>At dawn, a protected target survives. Discuss together, then choose one player to vote out, or skip voting.</li><li>The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.</li></ol>
+    <p>If a night choice times out, that role takes no action. A missing Doctor still gets a silent turn, so the host never reveals whether the Doctor is alive. Night choices are visible on this shared device only to the player whose eyes are open.</p>
+  </details>
+</section>
+<section id="table" class="table" aria-label="Game table" hidden>
+  <div class="table-status"><span id="roundInfo">NIGHT 1</span><span id="aliveInfo"></span><button id="pause" class="quiet" type="button" hidden>Pause night</button></div>
+  <div id="seats" class="seats"><section id="host" class="host" aria-label="Host instructions"></section></div>
+</section>
+</main>
+<footer class="soundbar">
+  <label><input id="voice" type="checkbox" checked> Spoken host</label>
+  <label><input id="sound" type="checkbox" checked> Night sounds</label>
+  <button id="testVoice" class="quiet" type="button">Test voice ♪</button>
+  <span id="audioNote" role="status"></span>
+</footer>
+<dialog id="confirmDialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="actions"><button id="cancelConfirm" class="secondary" type="button">Cancel</button><button id="acceptConfirm" class="primary" type="button">Confirm</button></div></dialog>
+<dialog id="pauseDialog"><div class="eyebrow">TAKE YOUR TIME</div><h2>Night is paused.</h2><p>Keep your eyes closed. Resume when everyone is ready.</p><button id="resume" class="primary" type="button">Resume night</button></dialog>
+<script src="./app.js" defer></script>
+</body>
+</html>
