@@ -35,6 +35,7 @@
   let attack = null, protection = null, secondsPerChoice = 20;
   let timeouts = [], interval = null, paused = false, resumeStage = null;
   let confirmAction = null, audio = null, droneGain = null;
+  let previewUntil = 0, previewTimer = null;
   let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
   const chimeOscillators = new Set();
 
@@ -97,16 +98,16 @@
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
   function unlockAudio() {
-    if (!$('sound').checked) return;
+    if (!$('sound').checked) return Promise.resolve(false);
     try {
       if (!audio) {
         const Context = window.AudioContext || window.webkitAudioContext;
-        if (!Context) return;
+        if (!Context) { $('audioNote').textContent = 'Night sounds are unavailable in this browser.'; return Promise.resolve(false); }
         audio = new Context();
         droneGain = audio.createGain();
         droneGain.gain.value = 0;
         droneGain.connect(audio.destination);
-        [110, 164.81].forEach(frequency => {
+        [261.63, 392, 523.25].forEach(frequency => {
           const oscillator = audio.createOscillator();
           oscillator.type = 'sine';
           oscillator.frequency.value = frequency;
@@ -114,11 +115,16 @@
           oscillator.start();
         });
       }
-      audio.resume().catch(() => {
-        $('audioNote').textContent = t('Tap Night sounds to enable audio. Written instructions still work.');
+      return audio.resume().then(() => {
+        if (audio.state !== 'running') $('audioNote').textContent = 'Sound is paused by the browser. Tap Test sound again.';
+        return audio.state === 'running';
+      }).catch(() => {
+        $('audioNote').textContent = 'Sound could not start. Tap Test sound and check your device volume.';
+        return false;
       });
     } catch (_) {
       $('audioNote').textContent = t('Night sounds are unavailable in this browser.');
+      return Promise.resolve(false);
     }
   }
   function isNight() {
@@ -128,17 +134,18 @@
     if (!audio || !droneGain) return;
     const t = audio.currentTime;
     droneGain.gain.cancelScheduledValues(t);
-    droneGain.gain.setTargetAtTime($('sound').checked && isNight() && !paused ? 0.025 : 0, t, 0.25);
+    const playing = $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
+    droneGain.gain.setTargetAtTime(playing ? 0.12 * Number($('nightVolume').value) / 100 : 0, t, 0.15);
   }
   function chime() {
-    if (!audio || !$('sound').checked) return;
+    if (!audio || !$('sound').checked || Number($('nightVolume').value) === 0) return;
     try {
       [392, 523.25, 659.25].forEach((frequency, i) => {
         const oscillator = audio.createOscillator(), gain = audio.createGain();
         const start = audio.currentTime + i * 0.12;
         oscillator.frequency.value = frequency;
         gain.gain.setValueAtTime(0, start);
-        gain.gain.linearRampToValueAtTime(0.045, start + 0.03);
+        gain.gain.linearRampToValueAtTime(Math.max(0.0001, 0.12 * Number($('nightVolume').value) / 100), start + 0.03);
         gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.6);
         oscillator.connect(gain); gain.connect(audio.destination);
         chimeOscillators.add(oscillator);
@@ -147,6 +154,7 @@
       });
     } catch (_) { /* Silent mode remains fully playable. */ }
   }
+  function stopPreview() { clearTimeout(previewTimer); previewTimer = null; previewUntil = 0; }
   function stopChime() {
     chimeOscillators.forEach(oscillator => { try { oscillator.stop(); } catch (_) {} });
     chimeOscillators.clear();
@@ -246,7 +254,7 @@
     return roles;
   }
   function deal() {
-    clearTimers(); stopSpeech(); stopChime();
+    clearTimers(); stopSpeech(); stopChime(); stopPreview();
     paused = false; confirmAction = null;
     unlockAudio();
     const roles = shuffledRoles(Number($('playerCount').value));
@@ -446,7 +454,7 @@
   }
   function pauseNight() {
     if (!isNight() || paused) return;
-    paused = true; clearTimers(); stopSpeech(); stopChime(); ambience(); updateSeats();
+    paused = true; clearTimers(); stopSpeech(); stopChime(); stopPreview(); ambience(); updateSeats();
     $('pauseDialog').showModal();
   }
   function resumeNight() {
@@ -455,7 +463,7 @@
     if (resumeStage) resumeStage();
   }
   function reset() {
-    clearTimers(); stopSpeech(); stopChime(); phase = 'setup'; paused = false; resumeStage = null;
+    clearTimers(); stopSpeech(); stopChime(); stopPreview(); phase = 'setup'; paused = false; resumeStage = null;
     attack = null; protection = null; players = []; confirmAction = null;
     if ($('pauseDialog').open) $('pauseDialog').close();
     if ($('confirmDialog').open) $('confirmDialog').close();
@@ -487,7 +495,27 @@
     if (document.hidden) pauseNight();
   });
   $('voice').addEventListener('change', () => { if (!$('voice').checked) stopSpeech(); });
-  $('sound').addEventListener('change', () => { if ($('sound').checked) unlockAudio(); else stopChime(); ambience(); });
+  $('sound').addEventListener('change', () => {
+    if ($('sound').checked) unlockAudio().then(ambience);
+    else { stopPreview(); stopChime(); }
+    ambience();
+  });
+  $('nightVolume').addEventListener('input', () => {
+    $('nightVolumeValue').textContent = `${$('nightVolume').value}%`;
+    if (Number($('nightVolume').value) === 0) stopChime();
+    ambience();
+  });
+  $('testSound').addEventListener('click', async () => {
+    if (Number($('nightVolume').value) === 0) {
+      $('audioNote').textContent = 'Night volume is 0%. Raise it to hear the test.'; return;
+    }
+    $('sound').checked = true;
+    if (!await unlockAudio()) return;
+    stopPreview(); previewUntil = performance.now() + 2500;
+    ambience(); chime();
+    $('audioNote').textContent = 'Playing a short night-sound preview. Adjust Night volume or your device volume if needed.';
+    previewTimer = setTimeout(() => { previewUntil = 0; ambience(); previewTimer = null; }, 2500);
+  });
   $('testVoice').addEventListener('click', () => {
     unlockAudio();
     if (!('speechSynthesis' in window)) {

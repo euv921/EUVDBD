@@ -89,3 +89,13 @@ result, and winner heading follow Game language. Bilingual morning narration
 pairs each announcement: English open-eyes instruction then Chinese, English
 death/survival result then Chinese, English winner then Chinese. Default player
 labels are localized; custom names remain as entered. Buttons stay English.
+
+## Night audio
+
+Night ambience uses mid-range tones (C4/G4/C5), so tablet and phone speakers
+can reproduce it more easily than the original quiet bass drone. **Night volume**
+controls the ambience and chimes independently of **Spoken host**. **Test sound**
+unlocks audio on a direct tap and plays a 2.5-second preview in setup or during
+a game. Normal ambience plays only at night, and stops on pause, mute, or reset.
+The test also works with Spoken host disabled. If it remains silent, check device
+media volume, the output device, and Safari/iOS sound or silent-mode settings.

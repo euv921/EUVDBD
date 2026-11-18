@@ -4,3 +4,5 @@
 .language-choice{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px;color:var(--muted);font-size:12px}.language-choice select{width:180px;max-width:60%}html[lang="zh-CN"] h1,html[lang="zh-CN"] .host h2,html[lang="zh-CN"] dialog h2{font-family:ui-serif,"Songti SC","Noto Serif SC",serif;line-height:1.35}html[lang="zh-CN"] .private-role{letter-spacing:.12em}
 
 .language-hint{font-size:12px;color:var(--muted);margin:-6px 0 24px;line-height:1.6}.host .private-role{font-size:clamp(24px,4vw,34px);letter-spacing:.025em}.host p[lang="zh-CN"]{margin-top:-6px}
+
+.soundbar .volume-control{display:flex;align-items:center;gap:8px}.soundbar input[type="range"]{width:90px;height:24px;accent-color:var(--gold)}.volume-control output{min-width:30px;font-variant-numeric:tabular-nums}
