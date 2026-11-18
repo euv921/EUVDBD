@@ -30,14 +30,20 @@
     $('gameLanguage').value = gameLanguage;
     document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
+    applyGameInstructions();
     updateNames();
+  }
+  function applyGameInstructions() {
+    document.querySelectorAll('[data-game-i18n]').forEach(node => {
+      node.replaceChildren(displayText('span', g(node.dataset.gameI18n)));
+    });
   }
   const roleHelp = {
     Mafia: 'At night, open your eyes when called and tap one other living player to attack. Keep your role secret.',
     Doctor: 'At night, open your eyes when called and tap any living player to protect. You may protect yourself.',
     Villager: 'Keep your eyes closed all night. In the morning, discuss who you suspect and help vote out the Mafia.'
   };
-  let players = [], phase = 'setup', night = 0, revealIndex = 0;
+  let players = [], phase = 'setup', night = 0, revealIndex = 0, simpleMode = false;
   let attack = null, protection = null, secondsPerChoice = 20;
   let timeouts = [], interval = null, paused = false, resumeStage = null;
   let confirmAction = null, audio = null, musicGain = null;
@@ -262,9 +268,12 @@
     }
     const villagers = Number($('playerCount').value) - 2;
     $('villagerCount').textContent = villagers === 1 ? t('1 Villager') : t('{count} Villagers', {count: villagers});
-    $('modeNote').textContent = villagers === 1
-      ? t('One night only. Someone dies: Mafia wins. Nobody dies: Villager wins. No voting.')
-      : t('Discuss and vote during the day. Play until one side wins.');
+    updateModeNote();
+  }
+  function updateModeNote() {
+    $('modeNote').textContent = $('simpleMode').checked
+      ? 'Simple mode: one night. Nobody dies: Villagers win. Someone dies: Mafia wins. No discussion or voting.'
+      : 'Discuss and vote during the day. Play until one side wins.';
   }
   let dealSerial = 0, drawSerial = 0, roleEntropy = 0;
   function mixWord(value) {
@@ -304,6 +313,7 @@
     const raw = nameInputs.map((input, i) => input.value.trim() || t('Player {seat}', {seat: i + 1}));
     players = raw.map((name, id) => ({id, name: raw.filter(n => n.toLowerCase() === name.toLowerCase()).length > 1 ? t('{name} (seat {seat})', {name, seat: id + 1}) : name, role: roles[id], alive: true, defaultName: !nameInputs[id].value.trim()}));
     secondsPerChoice = Number($('choiceTime').value);
+    simpleMode = $('simpleMode').checked;
     night = 0; revealIndex = 0; attack = null; protection = null;
     $('setup').hidden = true; $('table').hidden = false; $('newGame').hidden = false;
     $('seats').replaceChildren(host);
@@ -341,7 +351,7 @@
     startStage('reveal', null);
     const p = players[revealIndex];
     panel(p.role === 'Mafia' ? '♠' : p.role === 'Doctor' ? '✚' : '⌂', t('FOR YOUR EYES ONLY'), p.name);
-    const instructions = players.length === 3 ? {
+    const instructions = simpleMode ? {
       Mafia: 'At night, tap one other living player to attack. If anyone dies, you win. The game ends after one night, with no discussion or voting.',
       Doctor: 'At night, tap any living player to save, including yourself. If nobody dies, the Mafia loses. The game ends after one night, with no discussion or voting.',
       Villager: 'Keep your eyes closed all night. If nobody dies, you win and the Mafia loses. The game ends at dawn. There is no discussion or voting round.'
@@ -362,18 +372,37 @@
   }
   function ready() {
     startStage('ready', null);
-    panel('☾', g('THE TABLE IS SET'), g('Let the town fall asleep.'), players.length === 3 ? g('Place the tablet between you. One night decides the winner, with no voting. Turn up the volume and listen to the host.') : g('Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.'));
+    panel('☾', g('THE TABLE IS SET'), g('Let the town fall asleep.'), simpleMode ? g('Place the tablet between you. One night decides the winner, with no voting. Turn up the volume and listen to the host.') : g('Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.'));
     actions(button(t('Begin the first night'), startNight));
   }
   function startNight() {
     unlockAudio(); night++; attack = null; protection = null;
     nightIntro(); chime();
   }
+  function shortOpeningPause(done) {
+    const begin = () => countdown(1, done);
+    if (speechPending === 0) { begin(); return; }
+    const clock = el('span', gameText('Listening…'), 'clock');
+    host.append(clock);
+    const began = performance.now();
+    let idleSince = null;
+    interval = setInterval(() => {
+      const now = performance.now();
+      const idle = 'speechSynthesis' in window && speechSynthesis.speaking === false && speechSynthesis.pending === false;
+      if (idle && now - began > 500) idleSince ??= now; else idleSince = null;
+      // Safari can omit speech-end callbacks. Confirm the native queue is idle
+      // rather than adding a long fixed pause after the Chinese narration.
+      if (speechPending === 0 || now >= speechUntil || (idleSince !== null && now - idleSince >= 500)) {
+        speechPending = 0;
+        clearInterval(interval); interval = null; clock.remove(); begin();
+      }
+    }, 100);
+  }
   function nightIntro() {
     startStage('night-intro', nightIntro);
     panel('☾', g('NIGHT {night}', {night}), g('Everyone, close your eyes.'), g('Listen to the host.'));
     say(g('It is night. Everyone, close your eyes.'));
-    countdown(promptTime(9), mafiaTurn);
+    shortOpeningPause(mafiaTurn);
   }
   function mafiaTurn() {
     startStage('mafia', mafiaTurn);
@@ -423,13 +452,13 @@
     morning(victim);
   }
   function winner() {
-    if (players.length === 3) return players.some(p => !p.alive) ? 'Mafia' : 'Villager';
+    if (simpleMode) return players.some(p => !p.alive) ? 'Mafia' : 'Villager';
     const mafia = players.filter(p => p.alive && p.role === 'Mafia').length;
     const town = players.filter(p => p.alive && p.role !== 'Mafia').length;
     return mafia === 0 ? 'Town' : mafia >= town ? 'Mafia' : null;
   }
   function victorySentence(won) {
-    return won === 'Town' ? 'The town wins.' : won === 'Villager' ? 'The Villager wins.' : 'The Mafia wins.';
+    return won === 'Town' ? 'The town wins.' : won === 'Villager' ? (players.length > 3 ? 'The Villagers win.' : 'The Villager wins.') : 'The Mafia wins.';
   }
   function playerName(player) {
     return player.defaultName ? g('Player {seat}', {seat: player.id + 1}) : player.name;
@@ -487,7 +516,7 @@
     });
     host.append(list);
     actions(button(t('Play again · same settings'), deal), button(t('Change settings'), reset, 'secondary'));
-    host.append(el('p', t('Play again keeps your players, names, and options, and randomly deals fresh secret roles. Random roles can repeat.'), 'privacy'));
+    host.append(displayText('p', g('Tap Play again · same settings to start another game with these names and options. Tap Change settings to edit them. Roles are randomly reassigned and can repeat.'), 'privacy'));
   }
   function ask(title, text, action) {
     confirmAction = action;
@@ -515,12 +544,17 @@
   }
   $('gameLanguage').addEventListener('change', () => {
     gameLanguage = normalizeLanguage($('gameLanguage').value);
+    applyGameInstructions();
     stopSpeech(); $('audioNote').textContent = '';
     try { localStorage.setItem('mafia-game-language', gameLanguage); } catch (_) {}
   });
   $('names').addEventListener('input', rememberNames);
   $('names').addEventListener('change', rememberNames);
-  $('playerCount').addEventListener('change', updateNames);
+  $('playerCount').addEventListener('change', () => {
+    $('simpleMode').checked = Number($('playerCount').value) === 3;
+    updateNames();
+  });
+  $('simpleMode').addEventListener('change', updateModeNote);
   $('setupForm').addEventListener('submit', event => { event.preventDefault(); deal(); });
   $('newGame').addEventListener('click', () => {
     if (isNight()) pauseNight();
@@ -550,7 +584,10 @@
   });
   try {
     const savedTrack = localStorage.getItem('mafia-music-track');
-    if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
+    if (savedTrack === 'dawn') {
+      $('musicTrack').value = 'haunted';
+      localStorage.setItem('mafia-music-track', 'haunted');
+    } else if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
   } catch (_) {}
   $('nightVolume').addEventListener('change', ambience);
   $('testSound').addEventListener('click', async () => {

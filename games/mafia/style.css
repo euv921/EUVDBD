@@ -10,3 +10,5 @@
 .soundbar .music-choice{display:flex;align-items:center;gap:8px}.music-choice select{width:145px;min-height:36px;padding:6px 9px;font-size:12px}
 
 .volume-control select{width:62px;min-height:36px;padding:6px 9px;font-size:12px}
+
+.mode-choice{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text);margin-top:18px}.mode-choice input{width:18px;height:18px;accent-color:var(--gold);flex:none}

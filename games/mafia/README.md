@@ -19,12 +19,12 @@ spoken, or retained in the morning screen. If a role does not act before its tim
 expires, it takes no action. A deceased Doctor still gets a timed, inactive turn to
 avoid revealing that role. The morning announces only the death or that nobody died.
 
-**Three-player mode:** exactly one Mafia, one Doctor, and one Villager play a
+**Simple mode** (on by default for three players, optional for 4–8 players): play a
 single night. If anyone dies, the Mafia wins. If nobody dies (including a missed
 Mafia attack), the Villager wins. The result is announced immediately, all roles
 are revealed, and there is no voting or second night.
 
-**With 4–8 players:** during the day, discuss together and choose one player to vote out (group agreement,
+**With Simple mode off:** during the day, discuss together and choose one player to vote out (group agreement,
 not individual secret ballots). Confirm the decision or skip the vote. The town wins
 when the Mafia is out. The Mafia wins at parity: one Mafia and at most one other
 living player. All roles are revealed when the game ends.
@@ -92,8 +92,8 @@ labels are localized; custom names remain as entered. Buttons stay English.
 
 ## Night music
 
-**Night music** plays one of three original instrumental songs: **Moonlit Town**,
-**Secret Steps**, or **Quiet Dawn**. Each has a melody, chord accompaniment, and
+**Night music** plays one of five original loops: **Moonlit Town**, **Secret Steps**,
+**Haunted Music Box**, **Ghosts in the Attic**, or **Halloween Chase**. Each has a melody, chord accompaniment, and
 bass line, and loops continuously through the night. No external audio download
 or streaming service is required: `music.js` renders the selected song locally.
 
@@ -145,3 +145,28 @@ count preserves every seat's name, including seats temporarily hidden. Clearing
 a name explicitly saves it as blank. Only names and preferences are stored,
 not secret roles or an active game. If storage is blocked, names still survive
 player-count changes during the current visit.
+
+### Spooky tracks
+
+Quiet Dawn has been removed; its saved selection migrates to Haunted Music Box,
+which is also the default for new visitors. The original two tracks remain.
+The new tracks have distinct arrangements: detuned music-box bells and diminished
+harmony; breathy ghost wind with gliding wails; and a fast Halloween ostinato over
+a double-heartbeat pulse. Their audio is generated locally, without external
+recordings, copyrighted songs, or sudden high-volume jumps.
+
+How to play and the end-of-game replay explanation also follow Game language;
+bilingual help shows English first, then Simplified Chinese. Action button
+labels remain English so the help can refer to the same visible controls.
+
+## Simple mode and opening pace
+
+Simple mode is a setup checkbox. Switching to 3 players defaults it on; switching
+to 4–8 defaults it off. You can manually turn it on or off at any player count.
+On means one night only: any death gives Mafia the win; no deaths gives the
+Villagers the win. No discussion, voting, or second night is offered. Off keeps
+the classic rules. Same-settings replay preserves the mode choice.
+
+After the opening narration finishes, the game waits about one second before
+waking the Mafia. It no longer adds a fixed 9/18-second opening countdown.
+Native speech state also detects an idle queue if Safari misses end callbacks.

@@ -162,5 +162,10 @@ window.MafiaTranslations = {
   "{name} died.": "{name}死了。",
   "Discuss who you suspect.": "请讨论你们怀疑的人。",
   "When the group is ready, choose someone to vote out, or skip the vote.": "大家准备好后，选择一人投票淘汰，或跳过投票。",
-  "{name} has been voted out.": "{name}被投票淘汰。"
+  "{name} has been voted out.": "{name}被投票淘汰。",
+  "Tap Play again · same settings to start another game with these names and options. Tap Change settings to edit them. Roles are randomly reassigned and can repeat.": "点击“Play again · same settings”，可保留这些姓名和选项，再玩一局。点击“Change settings”可更改设置。每局都会重新随机分配身份，身份可能重复。",
+  "Listening…": "请听语音……",
+  "The Villagers win.": "平民赢了。",
+  "At dawn, a protected target survives. In Simple mode, the game ends after one night: if anyone died, the Mafia wins; if nobody died, the Villagers win. There is no discussion or voting.": "天亮时，受到保护的目标会存活。简易模式只玩一晚：有人死亡则杀手赢；无人死亡则平民赢。没有讨论或投票。",
+  "With Simple mode off, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.": "关闭简易模式后，白天一起讨论，投票淘汰一人或跳过投票。杀手出局则平民阵营获胜；只剩一名其他玩家时，杀手获胜。出局玩家不再行动，并继续保密身份。"
 };
