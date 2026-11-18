@@ -6,3 +6,5 @@
 .language-hint{font-size:12px;color:var(--muted);margin:-6px 0 24px;line-height:1.6}.host .private-role{font-size:clamp(24px,4vw,34px);letter-spacing:.025em}.host p[lang="zh-CN"]{margin-top:-6px}
 
 .soundbar .volume-control{display:flex;align-items:center;gap:8px}.soundbar input[type="range"]{width:90px;height:24px;accent-color:var(--gold)}.volume-control output{min-width:30px;font-variant-numeric:tabular-nums}
+
+.soundbar .music-choice{display:flex;align-items:center;gap:8px}.music-choice select{width:145px;min-height:36px;padding:6px 9px;font-size:12px}

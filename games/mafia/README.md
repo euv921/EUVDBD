@@ -90,12 +90,16 @@ pairs each announcement: English open-eyes instruction then Chinese, English
 death/survival result then Chinese, English winner then Chinese. Default player
 labels are localized; custom names remain as entered. Buttons stay English.
 
-## Night audio
+## Night music
 
-Night ambience uses mid-range tones (C4/G4/C5), so tablet and phone speakers
-can reproduce it more easily than the original quiet bass drone. **Night volume**
-controls the ambience and chimes independently of **Spoken host**. **Test sound**
-unlocks audio on a direct tap and plays a 2.5-second preview in setup or during
-a game. Normal ambience plays only at night, and stops on pause, mute, or reset.
-The test also works with Spoken host disabled. If it remains silent, check device
-media volume, the output device, and Safari/iOS sound or silent-mode settings.
+**Night music** plays one of three original instrumental songs: **Moonlit Town**,
+**Secret Steps**, or **Quiet Dawn**. Each has a melody, chord accompaniment, and
+bass line, and loops continuously through the night. No external audio download
+or streaming service is required: `music.js` renders the selected song locally.
+
+Choose **Track**, adjust **Night volume**, and use **Test music** for a six-second
+preview. The track choice is remembered on this device when storage is available.
+Same-settings replay keeps the track and volume. Music fades out during daytime,
+pause, mute, or reset, and remains separate from **Spoken host**. Stage chimes
+remain available. If audio is silent, check device media volume, the output
+device, and Safari/iOS sound or silent-mode settings.

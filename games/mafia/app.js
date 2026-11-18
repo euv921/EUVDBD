@@ -34,8 +34,10 @@
   let players = [], phase = 'setup', night = 0, revealIndex = 0;
   let attack = null, protection = null, secondsPerChoice = 20;
   let timeouts = [], interval = null, paused = false, resumeStage = null;
-  let confirmAction = null, audio = null, droneGain = null;
+  let confirmAction = null, audio = null, musicGain = null;
   let previewUntil = 0, previewTimer = null;
+  let musicSource = null, playingTrack = null;
+  const musicBuffers = new Map();
   let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
   const chimeOscillators = new Set();
 
@@ -104,22 +106,16 @@
         const Context = window.AudioContext || window.webkitAudioContext;
         if (!Context) { $('audioNote').textContent = 'Night sounds are unavailable in this browser.'; return Promise.resolve(false); }
         audio = new Context();
-        droneGain = audio.createGain();
-        droneGain.gain.value = 0;
-        droneGain.connect(audio.destination);
-        [261.63, 392, 523.25].forEach(frequency => {
-          const oscillator = audio.createOscillator();
-          oscillator.type = 'sine';
-          oscillator.frequency.value = frequency;
-          oscillator.connect(droneGain);
-          oscillator.start();
-        });
+        musicGain = audio.createGain();
+        musicGain.gain.value = 0;
+        musicGain.connect(audio.destination);
+
       }
       return audio.resume().then(() => {
-        if (audio.state !== 'running') $('audioNote').textContent = 'Sound is paused by the browser. Tap Test sound again.';
+        if (audio.state !== 'running') $('audioNote').textContent = 'Sound is paused by the browser. Tap Test music again.';
         return audio.state === 'running';
       }).catch(() => {
-        $('audioNote').textContent = 'Sound could not start. Tap Test sound and check your device volume.';
+        $('audioNote').textContent = 'Sound could not start. Tap Test music and check your device volume.';
         return false;
       });
     } catch (_) {
@@ -130,12 +126,25 @@
   function isNight() {
     return ['night-intro', 'mafia', 'mafia-close', 'doctor', 'doctor-close'].includes(phase);
   }
+  function ensureMusic() {
+    const track = $('musicTrack').value;
+    if (musicSource && playingTrack === track) return;
+    if (musicSource) { musicSource.stop(); musicSource.disconnect(); }
+    if (!musicBuffers.has(track)) musicBuffers.set(track, window.MafiaMusic.render(audio, track));
+    musicSource = audio.createBufferSource();
+    musicSource.buffer = musicBuffers.get(track);
+    musicSource.loop = true;
+    musicSource.connect(musicGain);
+    musicSource.start();
+    playingTrack = track;
+  }
   function ambience() {
-    if (!audio || !droneGain) return;
+    if (!audio || !musicGain) return;
     const t = audio.currentTime;
-    droneGain.gain.cancelScheduledValues(t);
+    musicGain.gain.cancelScheduledValues(t);
     const playing = $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
-    droneGain.gain.setTargetAtTime(playing ? 0.12 * Number($('nightVolume').value) / 100 : 0, t, 0.15);
+    if (playing) ensureMusic();
+    musicGain.gain.setTargetAtTime(playing ? 0.4 * Number($('nightVolume').value) / 100 : 0, t, 0.15);
   }
   function chime() {
     if (!audio || !$('sound').checked || Number($('nightVolume').value) === 0) return;
@@ -500,6 +509,14 @@
     else { stopPreview(); stopChime(); }
     ambience();
   });
+  $('musicTrack').addEventListener('change', () => {
+    ambience();
+    try { localStorage.setItem('mafia-music-track', $('musicTrack').value); } catch (_) {}
+  });
+  try {
+    const savedTrack = localStorage.getItem('mafia-music-track');
+    if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
+  } catch (_) {}
   $('nightVolume').addEventListener('input', () => {
     $('nightVolumeValue').textContent = `${$('nightVolume').value}%`;
     if (Number($('nightVolume').value) === 0) stopChime();
@@ -511,10 +528,10 @@
     }
     $('sound').checked = true;
     if (!await unlockAudio()) return;
-    stopPreview(); previewUntil = performance.now() + 2500;
-    ambience(); chime();
-    $('audioNote').textContent = 'Playing a short night-sound preview. Adjust Night volume or your device volume if needed.';
-    previewTimer = setTimeout(() => { previewUntil = 0; ambience(); previewTimer = null; }, 2500);
+    stopPreview(); previewUntil = performance.now() + 6000;
+    ambience();
+    $('audioNote').textContent = `Playing a 6-second preview of ${window.MafiaMusic.tracks[$('musicTrack').value].title}. Adjust Night volume if needed.`;
+    previewTimer = setTimeout(() => { previewUntil = 0; ambience(); previewTimer = null; }, 6000);
   });
   $('testVoice').addEventListener('click', () => {
     unlockAudio();
