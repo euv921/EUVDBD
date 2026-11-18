@@ -99,8 +99,15 @@
     clearTimeout(speechTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
+  function useMediaPlaybackSession() {
+    // iOS 17+: Web Audio defaults to an ambient session that obeys the
+    // Ring/Silent switch. Explicit media playback uses the media channel.
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; }
+    catch (_) { /* Older/unsupported browsers retain ordinary playback. */ }
+  }
   function unlockAudio() {
     if (!$('sound').checked) return Promise.resolve(false);
+    useMediaPlaybackSession();
     try {
       if (!audio) {
         const Context = window.AudioContext || window.webkitAudioContext;
@@ -127,6 +134,7 @@
     return ['night-intro', 'mafia', 'mafia-close', 'doctor', 'doctor-close'].includes(phase);
   }
   function ensureMusic() {
+    useMediaPlaybackSession();
     const track = $('musicTrack').value;
     if (musicSource && playingTrack === track) return;
     if (musicSource) { musicSource.stop(); musicSource.disconnect(); }

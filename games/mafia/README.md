@@ -103,3 +103,17 @@ Same-settings replay keeps the track and volume. Music fades out during daytime,
 pause, mute, or reset, and remains separate from **Spoken host**. Stage chimes
 remain available. If audio is silent, check device media volume, the output
 device, and Safari/iOS sound or silent-mode settings.
+
+### iPhone Silent Mode
+
+Before creating/resuming audio and when music playback is requested, the game
+sets `navigator.audioSession.type = 'playback'` when supported. WebKit documents
+this as the iOS 17+ solution for Web Audio that would otherwise obey the
+Ring/Silent switch: https://bugs.webkit.org/show_bug.cgi?id=237322#c6
+
+The setting does not change device media volume, autoplay permission, the music
+checkbox, or the game's volume control. Older browsers without this API keep
+ordinary playback and may still require Silent Mode to be turned off. No
+microphone permission or silent looping media workaround is used. Actual
+hardware-switch behavior needs a check on an iPhone; automated desktop tests
+verify the playback request and unsupported-browser fallback.
