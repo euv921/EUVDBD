@@ -5,49 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121826">
 <title>Mafia · The Night Host</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css?v=20261118-zh2">
 </head>
 <body>
 <header class="topbar">
-  <a class="back" href="../../" aria-label="Back to game library">← Library</a>
-  <span class="brand">MAFIA <span>THE NIGHT HOST</span></span>
-  <button id="newGame" class="quiet" type="button" hidden>New game</button>
+  <a class="back" href="../../" aria-label="Back to game library" data-i18n-aria="Back to game library"><span data-i18n="← Library">← Library</span></a>
+  <span class="brand"><b data-i18n="MAFIA">MAFIA</b><span data-i18n="THE NIGHT HOST">THE NIGHT HOST</span></span>
+  <button id="newGame" class="quiet" type="button" hidden><span data-i18n="New game">New game</span></button>
 </header>
 <main>
 <section id="setup" class="setup">
-  <div class="eyebrow">ONE TABLET. EVERYONE PLAYS.</div>
+  <div class="eyebrow"><span data-i18n="ONE TABLET. EVERYONE PLAYS.">ONE TABLET. EVERYONE PLAYS.</span></div>
   <div class="moon" aria-hidden="true">☾</div>
-  <h1>A quiet town.<br>A secret among you.</h1>
-  <p class="intro">Your tablet is the host. Listen, close your eyes, and discover who you can trust.</p>
+  <h1><span data-i18n="A quiet town.">A quiet town.</span><br><span data-i18n="A secret among you.">A secret among you.</span></h1>
+  <p class="intro"><span data-i18n="Your tablet is the host. Listen, close your eyes, and discover who you can trust.">Your tablet is the host. Listen, close your eyes, and discover who you can trust.</span></p>
   <form id="setupForm" class="setup-card">
+    <label class="language-choice"><span>Language / 语言</span><select id="language" aria-label="Language / 语言"><option value="en">English</option><option value="zh-CN">简体中文</option></select></label>
     <div class="form-row">
-      <label>Players <select id="playerCount"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
-      <label>Time to choose <select id="choiceTime"><option value="15">15 seconds</option><option value="20" selected>20 seconds</option><option value="30">30 seconds</option></select></label>
+      <label><span data-i18n="Players">Players</span> <select id="playerCount"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+      <label><span data-i18n="Time to choose">Time to choose</span> <select id="choiceTime"><option value="15" data-i18n="15 seconds">15 seconds</option><option value="20" selected data-i18n="20 seconds">20 seconds</option><option value="30" data-i18n="30 seconds">30 seconds</option></select></label>
     </div>
     <div id="names" class="names"></div>
-    <p class="roles-line">Each night turn includes extra time for the spoken prompt.</p>
-    <p class="roles-line">1 Mafia <span>·</span> 1 Doctor <span>·</span> <span id="villagerCount">2 Villagers</span></p>
-    <p id="modeNote" class="roles-line">Discuss and vote during the day. Play until one side wins.</p>
-    <button class="primary wide" type="submit">Deal secret roles <span aria-hidden="true">→</span></button>
+    <p class="roles-line"><span data-i18n="Each night turn includes extra time for the spoken prompt.">Each night turn includes extra time for the spoken prompt.</span></p>
+    <p class="roles-line"><span data-i18n="1 Mafia">1 Mafia</span> <span>·</span> <span data-i18n="1 Doctor">1 Doctor</span> <span>·</span> <span id="villagerCount">2 Villagers</span></p>
+    <p id="modeNote" class="roles-line"><span data-i18n="Discuss and vote during the day. Play until one side wins.">Discuss and vote during the day. Play until one side wins.</span></p>
+    <button class="primary wide" type="submit"><span data-i18n="Deal secret roles">Deal secret roles</span> <span aria-hidden="true">→</span></button>
   </form>
-  <details class="howto"><summary>How to play</summary>
-    <ol><li>Take turns looking at your secret role. Hide it before passing the tablet.</li><li>Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.</li><li>The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.</li><li>At dawn, a protected target survives. With 3 players, the game ends after this one night: if anyone died, the Mafia wins; if nobody died, the Villager wins. There is no voting.</li><li>With 4–8 players, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.</li></ol>
-    <p>If a night choice times out, that role takes no action. A missing Doctor still gets a silent turn, so the host never reveals whether the Doctor is alive. Night choices are visible on this shared device only to the player whose eyes are open.</p>
+  <details class="howto"><summary><span data-i18n="How to play">How to play</span></summary>
+    <ol><li><span data-i18n="Take turns looking at your secret role. Hide it before passing the tablet.">Take turns looking at your secret role. Hide it before passing the tablet.</span></li><li><span data-i18n="Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.">Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.</span></li><li><span data-i18n="The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.">The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.</span></li><li><span data-i18n="At dawn, a protected target survives. With 3 players, the game ends after this one night: if anyone died, the Mafia wins; if nobody died, the Villager wins. There is no voting.">At dawn, a protected target survives. With 3 players, the game ends after this one night: if anyone died, the Mafia wins; if nobody died, the Villager wins. There is no voting.</span></li><li><span data-i18n="With 4–8 players, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.">With 4–8 players, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.</span></li></ol>
+    <p><span data-i18n="If a night choice times out, that role takes no action. A missing Doctor still gets a silent turn, so the host never reveals whether the Doctor is alive. Night choices are visible on this shared device only to the player whose eyes are open.">If a night choice times out, that role takes no action. A missing Doctor still gets a silent turn, so the host never reveals whether the Doctor is alive. Night choices are visible on this shared device only to the player whose eyes are open.</span></p>
   </details>
 </section>
-<section id="table" class="table" aria-label="Game table" hidden>
-  <div class="table-status"><span id="roundInfo">NIGHT 1</span><span id="aliveInfo"></span><button id="pause" class="quiet" type="button" hidden>Pause night</button></div>
-  <div id="seats" class="seats"><section id="host" class="host" aria-label="Host instructions"></section></div>
+<section id="table" class="table" aria-label="Game table" hidden data-i18n-aria="Game table">
+  <div class="table-status"><span id="roundInfo">NIGHT 1</span><span id="aliveInfo"></span><button id="pause" class="quiet" type="button" hidden><span data-i18n="Pause night">Pause night</span></button></div>
+  <div id="seats" class="seats"><section id="host" class="host" aria-label="Host instructions" data-i18n-aria="Host instructions"></section></div>
 </section>
 </main>
 <footer class="soundbar">
-  <label><input id="voice" type="checkbox" checked> Spoken host</label>
-  <label><input id="sound" type="checkbox" checked> Night sounds</label>
-  <button id="testVoice" class="quiet" type="button">Test voice ♪</button>
+  <label><input id="voice" type="checkbox" checked> <span data-i18n="Spoken host">Spoken host</span></label>
+  <label><input id="sound" type="checkbox" checked> <span data-i18n="Night sounds">Night sounds</span></label>
+  <button id="testVoice" class="quiet" type="button"><span data-i18n="Test voice ♪">Test voice ♪</span></button>
   <span id="audioNote" role="status"></span>
 </footer>
-<dialog id="confirmDialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="actions"><button id="cancelConfirm" class="secondary" type="button">Cancel</button><button id="acceptConfirm" class="primary" type="button">Confirm</button></div></dialog>
-<dialog id="pauseDialog"><div class="eyebrow">TAKE YOUR TIME</div><h2>Night is paused.</h2><p>Keep your eyes closed. Resume when everyone is ready.</p><button id="resume" class="primary" type="button">Resume night</button></dialog>
-<script src="./app.js" defer></script>
+<dialog id="confirmDialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="actions"><button id="cancelConfirm" class="secondary" type="button"><span data-i18n="Cancel">Cancel</span></button><button id="acceptConfirm" class="primary" type="button"><span data-i18n="Confirm">Confirm</span></button></div></dialog>
+<dialog id="pauseDialog"><div class="eyebrow"><span data-i18n="TAKE YOUR TIME">TAKE YOUR TIME</span></div><h2><span data-i18n="Night is paused.">Night is paused.</span></h2><p><span data-i18n="Keep your eyes closed. Resume when everyone is ready.">Keep your eyes closed. Resume when everyone is ready.</span></p><button id="resume" class="primary" type="button"><span data-i18n="Resume night">Resume night</span></button></dialog>
+<script src="./translations.js?v=20261118-zh2" defer></script>
+<script src="./app.js?v=20261118-zh2" defer></script>
 </body>
 </html>

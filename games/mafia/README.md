@@ -41,10 +41,24 @@ workflow discover the game without editing the homepage or hardcoding a catalog.
 ## Replay and random roles
 
 At the end, **Play again · same settings** immediately deals fresh secret roles
-using the same player count, names, turn time, spoken-host setting, and sound
-setting. **Change settings** returns to the setup form.
+using the same player count, names, turn time, language, spoken-host setting, and
+sound setting. **Change settings** returns to the setup form.
 
-Every deal uses a Fisher–Yates shuffle driven by `crypto.getRandomValues`, with
-rejection sampling to avoid modulo bias. Deals are independent: the same person
+Every deal uses a Fisher–Yates shuffle driven by `crypto.getRandomValues`, mixed
+with the current timestamp, high-resolution time, and a per-deal counter. Each
+draw has a changing mask, so even a stuck browser random source can vary deals.
+Rejection sampling avoids modulo bias. Deals are independent: the same person
 can receive the same role several times. For three players, each role has a
 1-in-3 chance at each seat on every deal. The game does not force role rotation.
+
+## Language
+
+Choose **English** or **简体中文** in setup. This translates the interface, role
+cards, instructions, results, and spoken narration. The language preference is
+remembered on this device when browser storage is available. Player names are
+kept exactly as typed. Same-settings replay keeps the chosen language.
+
+Chinese narration requests `zh-CN` and prefers an installed Mainland/Singapore
+Mandarin voice. If none is listed, the browser is asked to supply Chinese speech;
+install a Mandarin voice in device settings if necessary. **试听语音** tests it.
+The text remains available if speech fails.
