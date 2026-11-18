@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121826">
 <title>Mafia · The Night Host</title>
-<link rel="stylesheet" href="./style.css?v=20261118-zh2">
+<link rel="stylesheet" href="./style.css?v=20261118-split1">
 </head>
 <body>
 <header class="topbar">
@@ -20,7 +20,9 @@
   <h1><span data-i18n="A quiet town.">A quiet town.</span><br><span data-i18n="A secret among you.">A secret among you.</span></h1>
   <p class="intro"><span data-i18n="Your tablet is the host. Listen, close your eyes, and discover who you can trust.">Your tablet is the host. Listen, close your eyes, and discover who you can trust.</span></p>
   <form id="setupForm" class="setup-card">
-    <label class="language-choice"><span>Language / 语言</span><select id="language" aria-label="Language / 语言"><option value="en">English</option><option value="zh-CN">简体中文</option></select></label>
+    <label class="language-choice"><span data-i18n="UI language">UI language</span><select id="language" aria-label="UI language" data-i18n-aria="UI language"><option value="en">English</option><option value="zh-CN">简体中文</option></select></label>
+    <label class="language-choice"><span data-i18n="Game language">Game language</span><select id="gameLanguage" aria-label="Game language" data-i18n-aria="Game language"><option value="en">English</option><option value="zh-CN">简体中文</option></select></label>
+    <p class="language-hint" data-i18n="UI language changes screen text. Game language changes the spoken host. Role cards always show English and Chinese.">UI language changes screen text. Game language changes the spoken host. Role cards always show English and Chinese.</p>
     <div class="form-row">
       <label><span data-i18n="Players">Players</span> <select id="playerCount"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
       <label><span data-i18n="Time to choose">Time to choose</span> <select id="choiceTime"><option value="15" data-i18n="15 seconds">15 seconds</option><option value="20" selected data-i18n="20 seconds">20 seconds</option><option value="30" data-i18n="30 seconds">30 seconds</option></select></label>
@@ -49,7 +51,7 @@
 </footer>
 <dialog id="confirmDialog"><h2 id="confirmTitle"></h2><p id="confirmText"></p><div class="actions"><button id="cancelConfirm" class="secondary" type="button"><span data-i18n="Cancel">Cancel</span></button><button id="acceptConfirm" class="primary" type="button"><span data-i18n="Confirm">Confirm</span></button></div></dialog>
 <dialog id="pauseDialog"><div class="eyebrow"><span data-i18n="TAKE YOUR TIME">TAKE YOUR TIME</span></div><h2><span data-i18n="Night is paused.">Night is paused.</span></h2><p><span data-i18n="Keep your eyes closed. Resume when everyone is ready.">Keep your eyes closed. Resume when everyone is ready.</span></p><button id="resume" class="primary" type="button"><span data-i18n="Resume night">Resume night</span></button></dialog>
-<script src="./translations.js?v=20261118-zh2" defer></script>
-<script src="./app.js?v=20261118-zh2" defer></script>
+<script src="./translations.js?v=20261118-split1" defer></script>
+<script src="./app.js?v=20261118-split1" defer></script>
 </body>
 </html>

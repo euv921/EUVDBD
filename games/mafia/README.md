@@ -41,7 +41,7 @@ workflow discover the game without editing the homepage or hardcoding a catalog.
 ## Replay and random roles
 
 At the end, **Play again · same settings** immediately deals fresh secret roles
-using the same player count, names, turn time, language, spoken-host setting, and
+using the same player count, names, turn time, UI language, game language, spoken-host setting, and
 sound setting. **Change settings** returns to the setup form.
 
 Every deal uses a Fisher–Yates shuffle driven by `crypto.getRandomValues`, mixed
@@ -53,12 +53,18 @@ can receive the same role several times. For three players, each role has a
 
 ## Language
 
-Choose **English** or **简体中文** in setup. This translates the interface, role
-cards, instructions, results, and spoken narration. The language preference is
-remembered on this device when browser storage is available. Player names are
-kept exactly as typed. Same-settings replay keeps the chosen language.
+**UI language** controls all interface text, buttons, dialogs, and written host
+instructions. **Game language** independently controls the spoken host and the
+voice used by **Test voice**. Each supports English and Simplified Chinese.
+You can use an English interface with Chinese narration, or the other way around.
 
-Chinese narration requests `zh-CN` and prefers an installed Mainland/Singapore
-Mandarin voice. If none is listed, the browser is asked to supply Chinese speech;
-install a Mandarin voice in device settings if necessary. **试听语音** tests it.
-The text remains available if speech fails.
+Private role cards always show both the English and Chinese role name and both
+sets of role instructions: **Mafia / 杀手**, **Doctor / 医生**, **Villager / 平民**.
+The Chinese interface and spoken host use these same terms consistently.
+Player names remain exactly as entered.
+
+Both preferences are remembered on the device when storage is available and kept
+on same-settings replay. Existing combined-language preferences migrate to both
+settings until each is changed separately. Chinese narration requests `zh-CN`
+and prefers an installed Mainland/Singapore Mandarin voice. Install a Mandarin
+voice in device settings if necessary. Written instructions remain available.

@@ -2,16 +2,24 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const host = $('host');
-  let language = 'en';
-  try { language = localStorage.getItem('mafia-language') === 'zh-CN' ? 'zh-CN' : 'en'; } catch (_) {}
-  function t(key, values = {}) {
-    const text = language === 'zh-CN' ? window.MafiaTranslations[key] || key : key;
+  let language = 'en', gameLanguage = 'en';
+  const normalizeLanguage = value => value === 'zh-CN' ? 'zh-CN' : 'en';
+  try {
+    const legacy = localStorage.getItem('mafia-language');
+    language = normalizeLanguage(localStorage.getItem('mafia-ui-language') ?? legacy);
+    gameLanguage = normalizeLanguage(localStorage.getItem('mafia-game-language') ?? legacy);
+  } catch (_) {}
+  function translate(key, values, locale) {
+    const text = locale === 'zh-CN' ? window.MafiaTranslations[key] || key : key;
     return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? `{${name}}`));
   }
+  const t = (key, values = {}) => translate(key, values, language);
+  const g = (key, values = {}) => translate(key, values, gameLanguage);
   function applyLanguage() {
     document.documentElement.lang = language;
-    document.title = language === 'zh-CN' ? '黑手党 · 夜晚主持人' : 'Mafia · The Night Host';
+    document.title = language === 'zh-CN' ? '杀手游戏 · 夜晚主持人' : 'Mafia · The Night Host';
     $('language').value = language;
+    $('gameLanguage').value = gameLanguage;
     document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
     updateNames();
@@ -45,13 +53,13 @@
     if (!$('voice').checked || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
     const token = speechToken;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === 'zh-CN' ? 'zh-CN' : 'en-US';
+    utterance.lang = gameLanguage === 'zh-CN' ? 'zh-CN' : 'en-US';
     utterance.rate = 0.9;
     const voices = speechSynthesis.getVoices();
-    const voice = language === 'zh-CN'
+    const voice = gameLanguage === 'zh-CN'
       ? voices.find(v => /^zh[-_](CN|SG)/i.test(v.lang)) || voices.find(v => /^zh/i.test(v.lang))
       : voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
-    if (language === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
+    if (gameLanguage === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
     if (voice) utterance.voice = voice;
     utterance.onerror = event => {
       if (token === speechToken && !['interrupted', 'canceled'].includes(event.error)) {
@@ -250,11 +258,18 @@
     const p = players[revealIndex];
     panel(p.role === 'Mafia' ? '♠' : p.role === 'Doctor' ? '✚' : '⌂', t('FOR YOUR EYES ONLY'), p.name);
     const instructions = players.length === 3 ? {
-      Mafia: t('At night, tap one other living player to attack. If anyone dies, you win. The game ends after one night, with no discussion or voting.'),
-      Doctor: t('At night, tap any living player to save, including yourself. If nobody dies, the Mafia loses. The game ends after one night, with no discussion or voting.'),
-      Villager: t('Keep your eyes closed all night. If nobody dies, you win and the Mafia loses. The game ends at dawn. There is no discussion or voting round.')
+      Mafia: 'At night, tap one other living player to attack. If anyone dies, you win. The game ends after one night, with no discussion or voting.',
+      Doctor: 'At night, tap any living player to save, including yourself. If nobody dies, the Mafia loses. The game ends after one night, with no discussion or voting.',
+      Villager: 'Keep your eyes closed all night. If nobody dies, you win and the Mafia loses. The game ends at dawn. There is no discussion or voting round.'
     }[p.role] : roleHelp[p.role];
-    host.append(el('div', language === 'en' ? p.role.toUpperCase() : t(p.role), 'private-role'), el('p', t(instructions)));
+    const roleNames = {Mafia: '杀手', Doctor: '医生', Villager: '平民'};
+    const roleTitle = el('div', undefined, 'private-role');
+    const english = el('span', p.role), chinese = el('span', roleNames[p.role]);
+    english.lang = 'en'; chinese.lang = 'zh-CN';
+    roleTitle.append(english, document.createTextNode(' / '), chinese);
+    const englishHelp = el('p', instructions), chineseHelp = el('p', translate(instructions, {}, 'zh-CN'));
+    englishHelp.lang = 'en'; chineseHelp.lang = 'zh-CN';
+    host.append(roleTitle, englishHelp, chineseHelp);
     actions(button(t('Hide & continue'), () => {
       revealIndex++;
       if (revealIndex < players.length) showHandoff(); else ready();
@@ -272,33 +287,33 @@
   function nightIntro() {
     startStage('night-intro', nightIntro);
     panel('☾', t('NIGHT {night}', {night}), t('Everyone, close your eyes.'), t('No peeking. Only open your eyes when the host calls your role.'));
-    say(t('It is night. Everyone, close your eyes. Keep them closed until I call your role.'));
+    say(g('It is night. Everyone, close your eyes. Keep them closed until I call your role.'));
     countdown(9, mafiaTurn);
   }
   function mafiaTurn() {
     startStage('mafia', mafiaTurn);
     panel('♠', t('NIGHT {night} · SECRET CHOICE', {night}), t('Mafia, open your eyes.'), t('Tap one other living player’s button to attack. Your choice stays secret.'));
-    say(t('Mafia, open your eyes. Tap the player you want to attack. Everyone else, keep your eyes closed.'));
+    say(g('Mafia, open your eyes. Tap the player you want to attack. Everyone else, keep your eyes closed.'));
     countdown(secondsPerChoice + 8, () => closeMafia());
     host.append(el('p', t('A missed turn means no attack. Tap quietly.'), 'privacy'));
   }
   function closeMafia() {
     startStage('mafia-close', closeMafia);
     panel('☾', t('NIGHT {night}', {night}), t('Mafia, close your eyes.'), t('Everyone stays quiet. The next role is about to wake up.'));
-    say(t('Mafia, close your eyes.'));
+    say(g('Mafia, close your eyes.'));
     countdown(5, doctorTurn);
   }
   function doctorTurn() {
     startStage('doctor', doctorTurn);
     panel('✚', t('NIGHT {night} · SECRET CHOICE', {night}), t('Doctor, open your eyes.'), t('Tap a living player’s button to protect them. You may choose yourself.'));
-    say(t('Doctor, open your eyes. Tap the player you want to save. You may save yourself. Everyone else, keep your eyes closed.'));
+    say(g('Doctor, open your eyes. Tap the player you want to save. You may save yourself. Everyone else, keep your eyes closed.'));
     countdown(secondsPerChoice + 9, () => closeDoctor());
     host.append(el('p', t('If you are out, keep your eyes closed and wait for morning.'), 'privacy'));
   }
   function closeDoctor() {
     startStage('doctor-close', closeDoctor);
     panel('☾', t('NIGHT {night}', {night}), t('Doctor, close your eyes.'), t('The town will wake up together.'));
-    say(t('Doctor, close your eyes. Everyone, wait for morning.'));
+    say(g('Doctor, close your eyes. Everyone, wait for morning.'));
     countdown(6, resolveNight);
   }
   function choose(id) {
@@ -319,14 +334,14 @@
     }
   }
   function resolveNight() {
-    let text = t('Nobody died last night.');
+    let victim = null;
     if (attack !== null && attack !== protection) {
       players[attack].alive = false;
-      text = t('{name} died last night. They are out of the game.', {name: players[attack].name});
+      victim = players[attack].name;
     }
     // Discard both secret choices before the screen is shared again.
     attack = null; protection = null;
-    morning(text);
+    morning(victim);
   }
   function winner() {
     if (players.length === 3) return players.some(p => !p.alive) ? 'Mafia' : 'Villager';
@@ -334,21 +349,23 @@
     const town = players.filter(p => p.alive && p.role !== 'Mafia').length;
     return mafia === 0 ? 'Town' : mafia >= town ? 'Mafia' : null;
   }
-  function morning(result) {
+  function morning(victim) {
+    const resultKey = victim === null ? 'Nobody died last night.' : '{name} died last night. They are out of the game.';
+    const result = t(resultKey, {name: victim});
     startStage('morning', null);
     chime();
     const won = winner();
     panel('☀', t('MORNING · DAY {night}', {night}), t('Everyone, open your eyes.'), result);
-    const speech = t('It is morning. Everyone, open your eyes. {result}', {result});
+    const speech = g('It is morning. Everyone, open your eyes. {result}', {result: g(resultKey, {name: victim})});
     if (won) {
       const outcome = players.length === 3
-        ? won === 'Mafia' ? t('The Mafia wins. Someone died. The game is over. There is no voting round.') : t('The Villager wins. Nobody died. The game is over. There is no voting round.')
-        : won === 'Town' ? t('The town wins. The Mafia has been eliminated.') : t('The Mafia wins. The town is outnumbered or tied.');
-      say(t('{speech} {outcome}', {speech, outcome}));
+        ? won === 'Mafia' ? g('The Mafia wins. Someone died. The game is over. There is no voting round.') : g('The Villager wins. Nobody died. The game is over. There is no voting round.')
+        : won === 'Town' ? g('The town wins. The Mafia has been eliminated.') : g('The Mafia wins. The town is outnumbered or tied.');
+      say(g('{speech} {outcome}', {speech, outcome}));
       showWinner(won);
       return;
     }
-    say(t('{speech} Discuss who you suspect. When the group is ready, choose someone to vote out, or skip the vote.', {speech}));
+    say(g('{speech} Discuss who you suspect. When the group is ready, choose someone to vote out, or skip the vote.', {speech}));
     actions(button(t('Discuss & vote'), openVote), button(t('Skip vote · next night'), () => ask(t('Skip the daytime vote?'), t('No one will be voted out. Everyone will go to sleep for the next night.'), startNight), 'secondary'));
     host.append(el('p', t('Out players stay quiet and keep their role secret.'), 'privacy'));
   }
@@ -364,9 +381,9 @@
     const won = winner();
     panel('⌂', t('DAY {night}', {night}), t('{name} is voted out.', {name: players[id].name}), t('Their role stays secret until the game ends.'));
     if (won) {
-      say(t('{name} has been voted out. {winner} wins.', {name: players[id].name, winner: t(won)})); showWinner(won);
+      say(g('{name} has been voted out. {winner} wins.', {name: players[id].name, winner: g(won)})); showWinner(won);
     } else {
-      say(t('{name} has been voted out. Keep your role secret. The town will sleep again when everyone is ready.', {name: players[id].name}));
+      say(g('{name} has been voted out. Keep your role secret. The town will sleep again when everyone is ready.', {name: players[id].name}));
       actions(button(t('Begin the next night'), startNight));
     }
   }
@@ -410,8 +427,13 @@
   $('language').addEventListener('change', () => {
     language = $('language').value === 'zh-CN' ? 'zh-CN' : 'en';
     stopSpeech(); $('audioNote').textContent = '';
-    try { localStorage.setItem('mafia-language', language); } catch (_) {}
+    try { localStorage.setItem('mafia-ui-language', language); } catch (_) {}
     applyLanguage();
+  });
+  $('gameLanguage').addEventListener('change', () => {
+    gameLanguage = normalizeLanguage($('gameLanguage').value);
+    stopSpeech(); $('audioNote').textContent = '';
+    try { localStorage.setItem('mafia-game-language', gameLanguage); } catch (_) {}
   });
   $('playerCount').addEventListener('change', updateNames);
   $('setupForm').addEventListener('submit', event => { event.preventDefault(); deal(); });
@@ -446,7 +468,7 @@
       $('audioNote').textContent = t('Pause the night before testing the voice.');
       return;
     }
-    say(t('Welcome to Mafia. I will be your host. When night falls, close your eyes and listen carefully.'));
+    say(g('Welcome to Mafia. I will be your host. When night falls, close your eyes and listen carefully.'));
   });
   if (!('speechSynthesis' in window)) {
     $('voice').checked = false; $('voice').disabled = true;
