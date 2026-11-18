@@ -1,7 +1,7 @@
 # Mafia · The Night Host
 
 Open `https://euv921.github.io/EUVDBD/games/mafia/` on a tablet and share it around a table.
-Use 4–8 players: one Mafia, one Doctor, and the remaining players as Villagers.
+Use 3–8 players: one Mafia, one Doctor, and the remaining players as Villagers.
 Names are optional. Duplicate names receive a seat number.
 
 Each player privately reveals their own role, then hides it before passing the tablet.
@@ -19,7 +19,12 @@ spoken, or retained in the morning screen. If a role does not act before its tim
 expires, it takes no action. A deceased Doctor still gets a timed, inactive turn to
 avoid revealing that role. The morning announces only the death or that nobody died.
 
-During the day, discuss together and choose one player to vote out (group agreement,
+**Three-player mode:** exactly one Mafia, one Doctor, and one Villager play a
+single night. If anyone dies, the Mafia wins. If nobody dies (including a missed
+Mafia attack), the Villager wins. The result is announced immediately, all roles
+are revealed, and there is no voting or second night.
+
+**With 4–8 players:** during the day, discuss together and choose one player to vote out (group agreement,
 not individual secret ballots). Confirm the decision or skip the vote. The town wins
 when the Mafia is out. The Mafia wins at parity: one Mafia and at most one other
 living player. All roles are revealed when the game ends.

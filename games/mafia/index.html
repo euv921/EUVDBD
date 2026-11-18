@@ -21,16 +21,17 @@
   <p class="intro">Your tablet is the host. Listen, close your eyes, and discover who you can trust.</p>
   <form id="setupForm" class="setup-card">
     <div class="form-row">
-      <label>Players <select id="playerCount"><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+      <label>Players <select id="playerCount"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
       <label>Time to choose <select id="choiceTime"><option value="15">15 seconds</option><option value="20" selected>20 seconds</option><option value="30">30 seconds</option></select></label>
     </div>
     <div id="names" class="names"></div>
     <p class="roles-line">Each night turn includes extra time for the spoken prompt.</p>
     <p class="roles-line">1 Mafia <span>·</span> 1 Doctor <span>·</span> <span id="villagerCount">2 Villagers</span></p>
+    <p id="modeNote" class="roles-line">Discuss and vote during the day. Play until one side wins.</p>
     <button class="primary wide" type="submit">Deal secret roles <span aria-hidden="true">→</span></button>
   </form>
   <details class="howto"><summary>How to play</summary>
-    <ol><li>Take turns looking at your secret role. Hide it before passing the tablet.</li><li>Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.</li><li>The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.</li><li>At dawn, a protected target survives. Discuss together, then choose one player to vote out, or skip voting.</li><li>The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.</li></ol>
+    <ol><li>Take turns looking at your secret role. Hide it before passing the tablet.</li><li>Place the tablet in the middle. Everyone closes their eyes. Only open them when the host calls your role.</li><li>The Mafia taps a living player to attack. The Doctor taps a player to protect, including themselves.</li><li>At dawn, a protected target survives. With 3 players, the game ends after this one night: if anyone died, the Mafia wins; if nobody died, the Villager wins. There is no voting.</li><li>With 4–8 players, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.</li></ol>
     <p>If a night choice times out, that role takes no action. A missing Doctor still gets a silent turn, so the host never reveals whether the Doctor is alive. Night choices are visible on this shared device only to the player whose eyes are open.</p>
   </details>
 </section>

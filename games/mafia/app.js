@@ -155,7 +155,11 @@
       input.setAttribute('aria-label', `Seat ${i + 1} name`); input.value = old[i] || '';
       label.append(input); $('names').append(label);
     }
-    $('villagerCount').textContent = `${Number($('playerCount').value) - 2} Villagers`;
+    const villagers = Number($('playerCount').value) - 2;
+    $('villagerCount').textContent = `${villagers} ${villagers === 1 ? 'Villager' : 'Villagers'}`;
+    $('modeNote').textContent = villagers === 1
+      ? 'One night only. Someone dies: Mafia wins. Nobody dies: Villager wins. No voting.'
+      : 'Discuss and vote during the day. Play until one side wins.';
   }
   function randomBelow(max) {
     const range = 0x100000000, limit = range - range % max;
@@ -215,7 +219,7 @@
   }
   function ready() {
     startStage('ready', null);
-    panel('☾', 'THE TABLE IS SET', 'Let the town fall asleep.', 'Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.');
+    panel('☾', 'THE TABLE IS SET', 'Let the town fall asleep.', players.length === 3 ? 'Place the tablet between you. One night decides the winner, with no voting. Turn up the volume and listen to the host.' : 'Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.');
     actions(button('Begin the first night', startNight));
   }
   function startNight() {
@@ -282,6 +286,7 @@
     morning(text);
   }
   function winner() {
+    if (players.length === 3) return players.some(p => !p.alive) ? 'Mafia' : 'Villager';
     const mafia = players.filter(p => p.alive && p.role === 'Mafia').length;
     const town = players.filter(p => p.alive && p.role !== 'Mafia').length;
     return mafia === 0 ? 'Town' : mafia >= town ? 'Mafia' : null;
@@ -293,7 +298,10 @@
     panel('☀', `MORNING · DAY ${night}`, 'Everyone, open your eyes.', result);
     const speech = `It is morning. Everyone, open your eyes. ${result}`;
     if (won) {
-      say(`${speech} ${won === 'Town' ? 'The town wins. The Mafia has been eliminated.' : 'The Mafia wins. The town is outnumbered or tied.'}`);
+      const outcome = players.length === 3
+        ? won === 'Mafia' ? 'The Mafia wins. Someone died. The game is over. There is no voting round.' : 'The Villager wins. Nobody died. The game is over. There is no voting round.'
+        : won === 'Town' ? 'The town wins. The Mafia has been eliminated.' : 'The Mafia wins. The town is outnumbered or tied.';
+      say(`${speech} ${outcome}`);
       showWinner(won);
       return;
     }
@@ -323,7 +331,7 @@
     phase = 'end'; clearTimers(); resumeStage = null;
     $('roundInfo').textContent = 'GAME OVER'; $('pause').hidden = true;
     updateSeats(); ambience();
-    host.append(el('h2', won === 'Town' ? 'The town wins.' : 'The Mafia wins.'));
+    host.append(el('h2', won === 'Town' ? 'The town wins.' : won === 'Villager' ? 'The Villager wins.' : 'The Mafia wins.'));
     const list = el('ul', undefined, 'role-list');
     players.forEach(p => {
       const row = el('li'); row.append(el('span', p.name), el('strong', p.role)); list.append(row);
