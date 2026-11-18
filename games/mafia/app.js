@@ -2,23 +2,24 @@
   'use strict';
   const $ = id => document.getElementById(id);
   const host = $('host');
-  let language = 'en', gameLanguage = 'en';
-  const normalizeLanguage = value => value === 'zh-CN' ? 'zh-CN' : 'en';
+  let gameLanguage = 'en';
+  const normalizeLanguage = value => ['zh-CN', 'bilingual'].includes(value) ? value : 'en';
   try {
     const legacy = localStorage.getItem('mafia-language');
-    language = normalizeLanguage(localStorage.getItem('mafia-ui-language') ?? legacy);
     gameLanguage = normalizeLanguage(localStorage.getItem('mafia-game-language') ?? legacy);
   } catch (_) {}
   function translate(key, values, locale) {
     const text = locale === 'zh-CN' ? window.MafiaTranslations[key] || key : key;
-    return text.replace(/\{(\w+)\}/g, (_, name) => String(values[name] ?? `{${name}}`));
+    return text.replace(/\{(\w+)\}/g, (_, name) => values[name]?.speechKey ? translate(values[name].speechKey, values[name].speechValues, locale) : String(values[name] ?? `{${name}}`));
   }
-  const t = (key, values = {}) => translate(key, values, language);
-  const g = (key, values = {}) => translate(key, values, gameLanguage);
+  const t = (key, values = {}) => translate(key, values, 'en');
+  const g = (key, values = {}) => ({speechKey: key, speechValues: values});
+  const gameLocales = () => gameLanguage === 'bilingual' ? ['en', 'zh-CN'] : [gameLanguage];
+  const roleDisplay = role => gameLocales().map(locale => translate(role, {}, locale)).join(' / ');
+  const promptTime = seconds => seconds * (gameLanguage === 'bilingual' && $('voice').checked ? 2 : 1);
   function applyLanguage() {
-    document.documentElement.lang = language;
-    document.title = language === 'zh-CN' ? '杀手游戏 · 夜晚主持人' : 'Mafia · The Night Host';
-    $('language').value = language;
+    document.documentElement.lang = 'en';
+    document.title = 'Mafia · The Night Host';
     $('gameLanguage').value = gameLanguage;
     document.querySelectorAll('[data-i18n]').forEach(node => { node.textContent = t(node.dataset.i18n); });
     document.querySelectorAll('[data-i18n-aria]').forEach(node => { node.setAttribute('aria-label', t(node.dataset.i18nAria)); });
@@ -33,7 +34,7 @@
   let attack = null, protection = null, secondsPerChoice = 20;
   let timeouts = [], interval = null, paused = false, resumeStage = null;
   let confirmAction = null, audio = null, droneGain = null;
-  let speechTimer = null, speechToken = 0;
+  let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
   const chimeOscillators = new Set();
 
   function el(tag, text, className) {
@@ -48,36 +49,48 @@
     node.addEventListener('click', action);
     return node;
   }
-  function say(text) {
+  function say(message) {
     stopSpeech();
     if (!$('voice').checked || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
     const token = speechToken;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = gameLanguage === 'zh-CN' ? 'zh-CN' : 'en-US';
-    utterance.rate = 0.9;
+    const parts = gameLocales().map(locale => ({locale, text: translate(message.speechKey, message.speechValues, locale)}));
     const voices = speechSynthesis.getVoices();
-    const voice = gameLanguage === 'zh-CN'
-      ? voices.find(v => /^zh[-_](CN|SG)/i.test(v.lang)) || voices.find(v => /^zh/i.test(v.lang))
-      : voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
-    if (gameLanguage === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
-    if (voice) utterance.voice = voice;
-    utterance.onerror = event => {
-      if (token === speechToken && !['interrupted', 'canceled'].includes(event.error)) {
-        $('audioNote').textContent = t('Voice could not play. Follow the written host instructions, or tap Test voice.');
-      }
-    };
+    speechPending = parts.length;
+    // Guard automatic transitions until both languages finish. The deadline
+    // prevents a browser with missing speech events from stalling the game.
+    speechUntil = performance.now() + parts.reduce((ms, part) => ms + Math.max(5000, part.text.length / (part.locale === 'zh-CN' ? 3.5 : 12) * 1000 + 3000), 0);
+    const utterances = parts.map(({locale, text}) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = locale === 'zh-CN' ? 'zh-CN' : 'en-US';
+      utterance.rate = 0.9;
+      const voice = locale === 'zh-CN'
+        ? voices.find(v => /^zh[-_](CN|SG)/i.test(v.lang)) || voices.find(v => /^zh/i.test(v.lang))
+        : voices.find(v => /^en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang));
+      if (locale === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
+      if (voice) utterance.voice = voice;
+      let finished = false;
+      const finish = () => { if (!finished && token === speechToken) { finished = true; speechPending = Math.max(0, speechPending - 1); } };
+      utterance.onend = finish;
+      utterance.onerror = event => {
+        finish();
+        if (token === speechToken && !['interrupted', 'canceled'].includes(event.error)) $('audioNote').textContent = t('Voice could not play. Follow the written host instructions, or tap Test voice.');
+      };
+      return utterance;
+    });
     const speak = () => {
       if (token !== speechToken) return;
-      try { speechSynthesis.speak(utterance); } catch (_) {
-        $('audioNote').textContent = t('Voice could not play. Follow the written host instructions.');
-      }
+      // The browser queues these in order: English finishes before Chinese.
+      utterances.forEach(utterance => {
+        try { speechSynthesis.speak(utterance); } catch (_) {
+          utterance.onerror({error: 'unavailable'});
+        }
+      });
     };
-    // The first utterance must stay inside a tap on browsers that gate audio.
     if (navigator.userActivation?.isActive) speak();
     else speechTimer = setTimeout(speak, 80);
   }
   function stopSpeech() {
-    speechToken++;
+    speechToken++; speechPending = 0; speechUntil = 0;
     clearTimeout(speechTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
@@ -166,7 +179,10 @@
     function tick() {
       const left = Math.max(0, Math.ceil((deadline - performance.now()) / 1000));
       clock.textContent = t('{seconds} seconds', {seconds: left});
-      if (left === 0) { clearInterval(interval); interval = null; done(); }
+      if (left === 0) {
+        if (speechPending > 0 && performance.now() < speechUntil) { clock.textContent = 'Finishing narration…'; return; }
+        clearInterval(interval); interval = null; done();
+      }
     }
     tick(); interval = setInterval(tick, 200);
   }
@@ -262,14 +278,15 @@
       Doctor: 'At night, tap any living player to save, including yourself. If nobody dies, the Mafia loses. The game ends after one night, with no discussion or voting.',
       Villager: 'Keep your eyes closed all night. If nobody dies, you win and the Mafia loses. The game ends at dawn. There is no discussion or voting round.'
     }[p.role] : roleHelp[p.role];
-    const roleNames = {Mafia: '杀手', Doctor: '医生', Villager: '平民'};
     const roleTitle = el('div', undefined, 'private-role');
-    const english = el('span', p.role), chinese = el('span', roleNames[p.role]);
-    english.lang = 'en'; chinese.lang = 'zh-CN';
-    roleTitle.append(english, document.createTextNode(' / '), chinese);
-    const englishHelp = el('p', instructions), chineseHelp = el('p', translate(instructions, {}, 'zh-CN'));
-    englishHelp.lang = 'en'; chineseHelp.lang = 'zh-CN';
-    host.append(roleTitle, englishHelp, chineseHelp);
+    const explanations = [];
+    gameLocales().forEach((locale, index) => {
+      if (index) roleTitle.append(document.createTextNode(' / '));
+      const name = el('span', translate(p.role, {}, locale)); name.lang = locale;
+      const help = el('p', translate(instructions, {}, locale)); help.lang = locale;
+      roleTitle.append(name); explanations.push(help);
+    });
+    host.append(roleTitle, ...explanations);
     actions(button(t('Hide & continue'), () => {
       revealIndex++;
       if (revealIndex < players.length) showHandoff(); else ready();
@@ -288,33 +305,33 @@
     startStage('night-intro', nightIntro);
     panel('☾', t('NIGHT {night}', {night}), t('Everyone, close your eyes.'), t('No peeking. Only open your eyes when the host calls your role.'));
     say(g('It is night. Everyone, close your eyes. Keep them closed until I call your role.'));
-    countdown(9, mafiaTurn);
+    countdown(promptTime(9), mafiaTurn);
   }
   function mafiaTurn() {
     startStage('mafia', mafiaTurn);
     panel('♠', t('NIGHT {night} · SECRET CHOICE', {night}), t('Mafia, open your eyes.'), t('Tap one other living player’s button to attack. Your choice stays secret.'));
     say(g('Mafia, open your eyes. Tap the player you want to attack. Everyone else, keep your eyes closed.'));
-    countdown(secondsPerChoice + 8, () => closeMafia());
+    countdown(secondsPerChoice + promptTime(8), () => closeMafia());
     host.append(el('p', t('A missed turn means no attack. Tap quietly.'), 'privacy'));
   }
   function closeMafia() {
     startStage('mafia-close', closeMafia);
     panel('☾', t('NIGHT {night}', {night}), t('Mafia, close your eyes.'), t('Everyone stays quiet. The next role is about to wake up.'));
     say(g('Mafia, close your eyes.'));
-    countdown(5, doctorTurn);
+    countdown(promptTime(5), doctorTurn);
   }
   function doctorTurn() {
     startStage('doctor', doctorTurn);
     panel('✚', t('NIGHT {night} · SECRET CHOICE', {night}), t('Doctor, open your eyes.'), t('Tap a living player’s button to protect them. You may choose yourself.'));
     say(g('Doctor, open your eyes. Tap the player you want to save. You may save yourself. Everyone else, keep your eyes closed.'));
-    countdown(secondsPerChoice + 9, () => closeDoctor());
+    countdown(secondsPerChoice + promptTime(9), () => closeDoctor());
     host.append(el('p', t('If you are out, keep your eyes closed and wait for morning.'), 'privacy'));
   }
   function closeDoctor() {
     startStage('doctor-close', closeDoctor);
     panel('☾', t('NIGHT {night}', {night}), t('Doctor, close your eyes.'), t('The town will wake up together.'));
     say(g('Doctor, close your eyes. Everyone, wait for morning.'));
-    countdown(6, resolveNight);
+    countdown(promptTime(6), resolveNight);
   }
   function choose(id) {
     if (paused || !players[id]?.alive) return;
@@ -394,7 +411,7 @@
     host.append(el('h2', won === 'Town' ? t('The town wins.') : won === 'Villager' ? t('The Villager wins.') : t('The Mafia wins.')));
     const list = el('ul', undefined, 'role-list');
     players.forEach(p => {
-      const row = el('li'); row.append(el('span', p.name), el('strong', t(p.role))); list.append(row);
+      const row = el('li'); row.append(el('span', p.name), el('strong', roleDisplay(p.role))); list.append(row);
     });
     host.append(list);
     actions(button(t('Play again · same settings'), deal), button(t('Change settings'), reset, 'secondary'));
@@ -424,12 +441,6 @@
     $('table').hidden = true; $('setup').hidden = false; $('newGame').hidden = true;
     document.body.classList.remove('daytime');
   }
-  $('language').addEventListener('change', () => {
-    language = $('language').value === 'zh-CN' ? 'zh-CN' : 'en';
-    stopSpeech(); $('audioNote').textContent = '';
-    try { localStorage.setItem('mafia-ui-language', language); } catch (_) {}
-    applyLanguage();
-  });
   $('gameLanguage').addEventListener('change', () => {
     gameLanguage = normalizeLanguage($('gameLanguage').value);
     stopSpeech(); $('audioNote').textContent = '';
