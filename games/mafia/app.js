@@ -178,8 +178,10 @@
     return node;
   }
   function panel(symbol, kicker, title, description) {
-    host.append(el('div', symbol, 'symbol'), displayText('div', kicker, 'eyebrow'), displayText('h2', title));
-    if (description) host.append(displayText('p', description));
+    host.append(el('div', symbol, 'symbol'));
+    if (!isNight()) host.append(displayText('div', kicker, 'eyebrow'));
+    host.append(displayText('h2', title));
+    if (description && !isNight()) host.append(displayText('p', description));
   }
   function actions(...buttons) {
     const row = el('div', undefined, 'actions'); row.append(...buttons); host.append(row);
@@ -320,7 +322,7 @@
   function nightIntro() {
     startStage('night-intro', nightIntro);
     panel('☾', g('NIGHT {night}', {night}), g('Everyone, close your eyes.'), g('Listen to the host.'));
-    say([g('It is night.'), g('Everyone, close your eyes.')]);
+    say(g('It is night. Everyone, close your eyes.'));
     countdown(promptTime(9), mafiaTurn);
   }
   function mafiaTurn() {
@@ -328,7 +330,6 @@
     panel('♠', g('NIGHT {night} · SECRET CHOICE', {night}), g('Mafia, open your eyes.'), [g('Tap one other living player’s button to attack.'), g('Your choice stays secret.')]);
     say([g('Mafia, open your eyes.'), g('Tap the player you want to attack.')]);
     countdown(secondsPerChoice + promptTime(8), () => closeMafia());
-    host.append(displayText('p', [g('A missed turn means no attack.'), g('Tap quietly.')], 'privacy'));
   }
   function closeMafia() {
     startStage('mafia-close', closeMafia);
@@ -341,7 +342,6 @@
     panel('✚', g('NIGHT {night} · SECRET CHOICE', {night}), g('Doctor, open your eyes.'), [g('Tap a living player’s button to protect them.'), g('You may choose yourself.')]);
     say([g('Doctor, open your eyes.'), g('Tap the player you want to save.'), g('You may save yourself.')]);
     countdown(secondsPerChoice + promptTime(9), () => closeDoctor());
-    host.append(displayText('p', g('If you are out, keep your eyes closed and wait for morning.'), 'privacy'));
   }
   function closeDoctor() {
     startStage('doctor-close', closeDoctor);
@@ -352,11 +352,7 @@
   function choose(id) {
     if (paused || !players[id]?.alive) return;
     if (phase === 'mafia') {
-      if (players[id].role === 'Mafia') {
-        const note = host.querySelector('.privacy');
-        note.textContent = gameText('Choose another living player. You cannot choose yourself.');
-        return;
-      }
+      if (players[id].role === 'Mafia') return;
       attack = id; closeMafia();
     } else if (phase === 'doctor') {
       // Still call the Doctor every night, without revealing whether they survived.

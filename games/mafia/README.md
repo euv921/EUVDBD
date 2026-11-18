@@ -77,3 +77,9 @@ if needed. Written UI instructions remain available if speech cannot play.
 
 Night narration omits the repeated “everyone else, keep your eyes closed” reminder.
 The opening night instruction and each role’s close-eyes instruction remain.
+
+Night screens show only the phase symbol, large instruction, and countdown;
+small explanatory notes are omitted. The bilingual opening is one complete
+English phrase, “It is night. Everyone, close your eyes.”, followed by
+“天黑请闭眼。” Other night instructions remain paired by sentence. Chinese role
+calls have no comma after the role name, such as “医生请睁眼。”
