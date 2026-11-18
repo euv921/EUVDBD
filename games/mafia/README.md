@@ -57,14 +57,15 @@ The UI is always English. There is no UI-language selector, and any older
 UI-language preference is ignored.
 
 **Game language** offers **English**, **简体中文**, and **Bilingual (English → 简体中文)**.
-It controls both the private role card (name and instructions) and the spoken
+It controls the private role card (name and instructions), written night prompts,
+night countdown, winner heading, and the spoken
 host, including Test voice, night phases, morning results, and victory messages.
 Role names in the final reveal also follow this setting. Chinese roles are
 **杀手**, **医生**, and **平民**.
 
-Bilingual cards show English first, then Simplified Chinese. Bilingual narration
-queues a separate English utterance followed by a Mandarin utterance, with the
-appropriate voice for each. Prompt time is extended in bilingual mode, and
+Bilingual cards show English first, then Simplified Chinese. Bilingual night narration pairs each English sentence with its Simplified
+Chinese translation before moving to the next sentence, with the appropriate
+voice for each. Written night prompts use the same sentence order. Prompt time is extended in bilingual mode, and
 automatic transitions wait for pending narration to finish (with a timeout if
 speech events are unavailable). Pause, replay, or a new stage cancels old speech.
 
@@ -73,3 +74,6 @@ kept on same-settings replay. Existing English/Chinese game-language choices
 continue to work. Chinese narration requests `zh-CN` and prefers an installed
 Mainland/Singapore Mandarin voice. Install a Mandarin voice in device settings
 if needed. Written UI instructions remain available if speech cannot play.
+
+Night narration omits the repeated “everyone else, keep your eyes closed” reminder.
+The opening night instruction and each role’s close-eyes instruction remain.
