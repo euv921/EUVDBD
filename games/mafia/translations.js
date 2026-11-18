@@ -120,9 +120,9 @@ window.MafiaTranslations = {
   "{name} has been voted out. Keep your role secret. The town will sleep again when everyone is ready.": "{name}被投票淘汰。请保密自己的身份。大家准备好后，小镇将再次入睡。",
   "Begin the next night": "开始下一晚",
   "GAME OVER": "游戏结束",
-  "The town wins.": "平民阵营获胜。",
-  "The Villager wins.": "平民获胜。",
-  "The Mafia wins.": "杀手获胜。",
+  "The town wins.": "平民阵营赢了。",
+  "The Villager wins.": "平民赢了。",
+  "The Mafia wins.": "杀手赢了。",
   "Play again · same settings": "相同设置，再玩一局",
   "Change settings": "更改设置",
   "Play again keeps your players, names, and options, and randomly deals fresh secret roles. Random roles can repeat.": "再玩一局会保留人数、姓名和选项，并重新随机分配秘密身份。随机身份有可能重复。",
@@ -158,5 +158,9 @@ window.MafiaTranslations = {
   "Everyone stays quiet.": "所有人保持安静。",
   "The next role is about to wake up.": "即将唤醒下一个身份。",
   "A missed turn means no attack.": "超时则不发动袭击。",
-  "Tap quietly.": "请安静地点击。"
+  "Tap quietly.": "请安静地点击。",
+  "{name} died.": "{name}死了。",
+  "Discuss who you suspect.": "请讨论你们怀疑的人。",
+  "When the group is ready, choose someone to vote out, or skip the vote.": "大家准备好后，选择一人投票淘汰，或跳过投票。",
+  "{name} has been voted out.": "{name}被投票淘汰。"
 };

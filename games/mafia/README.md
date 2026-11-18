@@ -83,3 +83,9 @@ small explanatory notes are omitted. The bilingual opening is one complete
 English phrase, “It is night. Everyone, close your eyes.”, followed by
 “天黑请闭眼。” Other night instructions remain paired by sentence. Chinese role
 calls have no comma after the role name, such as “医生请睁眼。”
+
+The ready screen (“Let the town fall asleep”), morning screen, death/survival
+result, and winner heading follow Game language. Bilingual morning narration
+pairs each announcement: English open-eyes instruction then Chinese, English
+death/survival result then Chinese, English winner then Chinese. Default player
+labels are localized; custom names remain as entered. Buttons stay English.

@@ -312,7 +312,7 @@
   }
   function ready() {
     startStage('ready', null);
-    panel('☾', t('THE TABLE IS SET'), t('Let the town fall asleep.'), players.length === 3 ? t('Place the tablet between you. One night decides the winner, with no voting. Turn up the volume and listen to the host.') : t('Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.'));
+    panel('☾', g('THE TABLE IS SET'), g('Let the town fall asleep.'), players.length === 3 ? g('Place the tablet between you. One night decides the winner, with no voting. Turn up the volume and listen to the host.') : g('Place the tablet between you. Each corner is a player’s seat. Turn up the volume and listen to the host.'));
     actions(button(t('Begin the first night'), startNight));
   }
   function startNight() {
@@ -366,7 +366,7 @@
     let victim = null;
     if (attack !== null && attack !== protection) {
       players[attack].alive = false;
-      victim = players[attack].name;
+      victim = players[attack];
     }
     // Discard both secret choices before the screen is shared again.
     attack = null; protection = null;
@@ -378,23 +378,26 @@
     const town = players.filter(p => p.alive && p.role !== 'Mafia').length;
     return mafia === 0 ? 'Town' : mafia >= town ? 'Mafia' : null;
   }
+  function victorySentence(won) {
+    return won === 'Town' ? 'The town wins.' : won === 'Villager' ? 'The Villager wins.' : 'The Mafia wins.';
+  }
+  function playerName(player) {
+    return player.defaultName ? g('Player {seat}', {seat: player.id + 1}) : player.name;
+  }
   function morning(victim) {
-    const resultKey = victim === null ? 'Nobody died last night.' : '{name} died last night. They are out of the game.';
-    const result = t(resultKey, {name: victim});
+    const result = victim === null ? g('Nobody died last night.') : g('{name} died.', {name: playerName(victim)});
     startStage('morning', null);
     chime();
     const won = winner();
-    panel('☀', t('MORNING · DAY {night}', {night}), t('Everyone, open your eyes.'), result);
-    const speech = g('It is morning. Everyone, open your eyes. {result}', {result: g(resultKey, {name: victim})});
+    panel('☀', g('MORNING · DAY {night}', {night}), g('Everyone, open your eyes.'));
+    host.append(displayText('p', result, 'morning-result'));
+    const announcements = [g('Everyone, open your eyes.'), result];
     if (won) {
-      const outcome = players.length === 3
-        ? won === 'Mafia' ? g('The Mafia wins. Someone died. The game is over. There is no voting round.') : g('The Villager wins. Nobody died. The game is over. There is no voting round.')
-        : won === 'Town' ? g('The town wins. The Mafia has been eliminated.') : g('The Mafia wins. The town is outnumbered or tied.');
-      say(g('{speech} {outcome}', {speech, outcome}));
+      say([...announcements, g(victorySentence(won))]);
       showWinner(won);
       return;
     }
-    say(g('{speech} Discuss who you suspect. When the group is ready, choose someone to vote out, or skip the vote.', {speech}));
+    say([...announcements, g('Discuss who you suspect.'), g('When the group is ready, choose someone to vote out, or skip the vote.')]);
     actions(button(t('Discuss & vote'), openVote), button(t('Skip vote · next night'), () => ask(t('Skip the daytime vote?'), t('No one will be voted out. Everyone will go to sleep for the next night.'), startNight), 'secondary'));
     host.append(el('p', t('Out players stay quiet and keep their role secret.'), 'privacy'));
   }
@@ -408,9 +411,9 @@
     players[id].alive = false;
     startStage('after-vote', null);
     const won = winner();
-    panel('⌂', t('DAY {night}', {night}), t('{name} is voted out.', {name: players[id].name}), t('Their role stays secret until the game ends.'));
+    panel('⌂', g('DAY {night}', {night}), g('{name} is voted out.', {name: playerName(players[id])}), g('Their role stays secret until the game ends.'));
     if (won) {
-      say(g('{name} has been voted out. {winner} wins.', {name: players[id].name, winner: g(won)})); showWinner(won);
+      say([g('{name} has been voted out.', {name: playerName(players[id])}), g(victorySentence(won))]); showWinner(won);
     } else {
       say(g('{name} has been voted out. Keep your role secret. The town will sleep again when everyone is ready.', {name: players[id].name}));
       actions(button(t('Begin the next night'), startNight));
@@ -420,7 +423,7 @@
     phase = 'end'; clearTimers(); resumeStage = null;
     $('roundInfo').textContent = t('GAME OVER'); $('pause').hidden = true;
     updateSeats(); ambience();
-    const winnerKey = won === 'Town' ? 'The town wins.' : won === 'Villager' ? 'The Villager wins.' : 'The Mafia wins.';
+    const winnerKey = victorySentence(won);
     const title = el('h2', undefined, 'winner-title');
     gameLocales().forEach((locale, index) => {
       if (index) title.append(document.createElement('br'));
