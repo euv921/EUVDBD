@@ -4,7 +4,7 @@
   const host = $('host');
   let gameLanguage = 'en';
   const savedNames = Array(8).fill('');
-  const volumeRatio = () => ({1: 0.1, 2: 0.2, 3: 0.3, 4: 0.5, 5: 1})[$('nightVolume').value] ?? 0.3;
+  const volumeRatio = () => ({1: 0.1, 2: 0.2, 3: 0.3, 4: 0.5, 5: 1})[$('nightVolume').value] ?? 0.5;
   const normalizeLanguage = value => ['zh-CN', 'bilingual'].includes(value) ? value : 'en';
   try {
     const legacy = localStorage.getItem('mafia-language');
@@ -154,6 +154,10 @@
   function isNight() {
     return ['night-intro', 'mafia', 'mafia-close', 'doctor', 'doctor-close'].includes(phase);
   }
+  function restartMusic() {
+    if (musicSource) { musicSource.stop(); musicSource.disconnect(); }
+    musicSource = null; playingTrack = null;
+  }
   function ensureMusic() {
     useMediaPlaybackSession();
     const track = $('musicTrack').value;
@@ -163,6 +167,8 @@
     musicSource = audio.createBufferSource();
     musicSource.buffer = musicBuffers.get(track);
     musicSource.loop = true;
+    musicSource.loopStart = window.MafiaMusic.tracks[track].introSeconds || 0;
+    musicSource.loopEnd = musicSource.buffer.duration;
     musicSource.connect(musicGain);
     musicSource.start();
     playingTrack = track;
@@ -376,11 +382,11 @@
     actions(button(t('Begin the first night'), startNight));
   }
   function startNight() {
-    unlockAudio(); night++; attack = null; protection = null;
+    unlockAudio(); restartMusic(); night++; attack = null; protection = null;
     nightIntro(); chime();
   }
   function shortOpeningPause(done) {
-    const begin = () => countdown(3, done);
+    const begin = () => countdown(5, done);
     if (speechPending === 0) { begin(); return; }
     const clock = el('span', gameText('Listening…'), 'clock');
     host.append(clock);
@@ -588,10 +594,11 @@
   });
   try {
     const savedTrack = localStorage.getItem('mafia-music-track');
-    if (savedTrack === 'dawn') {
-      $('musicTrack').value = 'haunted';
-      localStorage.setItem('mafia-music-track', 'haunted');
-    } else if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
+    if (window.MafiaMusic.tracks[savedTrack]) $('musicTrack').value = savedTrack;
+    else if (savedTrack) {
+      $('musicTrack').value = 'ghost';
+      localStorage.setItem('mafia-music-track', 'ghost');
+    }
   } catch (_) {}
   $('nightVolume').addEventListener('change', ambience);
   $('testSound').addEventListener('click', async () => {
@@ -607,7 +614,7 @@
     const started = await unlockAudio();
     if (request !== musicPreviewRequest) return;
     if (!started) { stopPreview(); ambience(); return; }
-    previewUntil = Infinity;
+    restartMusic(); previewUntil = Infinity;
     ambience();
     $('audioNote').textContent = `Previewing ${window.MafiaMusic.tracks[$('musicTrack').value].title}. Tap Stop music to stop.`;
   });

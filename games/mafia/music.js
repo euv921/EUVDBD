@@ -1,35 +1,72 @@
-// Original instrumental loops; generated locally without external audio files.
+// Original ghost soundscapes and synthetic laugh intros, generated locally.
 window.MafiaMusic = (() => {
   'use strict';
   const tracks = {
-    moonlit: {
-      title: 'Moonlit Town', bpm: 72,
-      chords: [[57,60,64],[53,57,60],[60,64,67],[55,59,62],[57,60,64],[53,57,60],[55,59,62],[57,60,64]],
-      melody: [69,72,76,72,71,69,67,64, 65,69,72,69,67,65,64,-1, 67,72,76,79,76,72,71,67, 67,71,74,71,69,67,64,-1, 69,72,76,81,79,76,72,69, 72,69,65,69,72,74,72,69, 71,74,79,74,72,71,67,64, 69,72,76,72,71,69,69,-1]
-    },
-    secret: {
-      title: 'Secret Steps', bpm: 92,
-      chords: [[62,65,69],[58,62,65],[55,58,62],[57,61,64],[62,65,69],[58,62,65],[57,61,64],[62,65,69]],
-      melody: [74,-1,77,76,74,69,72,74, 77,74,70,-1,74,77,76,74, 79,77,74,70,67,-1,70,74, 73,76,81,76,73,69,-1,72, 74,77,81,77,76,74,72,69, 70,74,77,81,77,74,70,-1, 73,76,79,76,73,69,72,73, 74,-1,77,76,74,69,74,-1]
-    },
-    haunted: {
-      title: 'Haunted Music Box', bpm: 58, mood: 'musicbox',
-      chords: [[57,60,63],[56,59,62],[53,57,60],[52,56,59],[57,60,63],[54,57,60],[56,59,62],[57,60,63]],
-      melody: [81,-1,84,-1,83,81,75,-1, 80,-1,83,-1,86,83,80,-1, 81,84,88,-1,87,-1,84,81, 80,-1,83,87,86,83,-1,-1, 81,84,87,90,-1,87,84,81, 78,-1,81,84,87,84,81,-1, 80,83,86,-1,89,86,83,80, 81,-1,84,83,81,-1,-1,-1]
-    },
     ghost: {
-      title: 'Ghosts in the Attic', bpm: 54, mood: 'ghost',
+      title: "Ghosts in the Attic",
+      bpm: 54,
+      mood: "ghost",
       chords: [[50,57,62],[51,57,63],[50,56,62],[49,56,61],[50,57,62],[53,59,65],[51,57,63],[50,56,62]],
-      melody: [74,-1,-1,73,-1,-1,69,-1, 75,-1,74,-1,-1,69,-1,-1, 74,-1,80,-1,79,-1,74,-1, 73,-1,-1,68,-1,-1,73,-1, 74,-1,77,-1,76,74,-1,-1, 77,-1,83,-1,82,-1,77,-1, 75,-1,81,-1,80,75,-1,-1, 74,-1,-1,73,-1,74,-1,-1]
+      melody: [
+        74,-1,-1,73,-1,-1,69,-1,
+        75,-1,74,-1,-1,69,-1,-1,
+        74,-1,80,-1,79,-1,74,-1,
+        73,-1,-1,68,-1,-1,73,-1,
+        74,-1,77,-1,76,74,-1,-1,
+        77,-1,83,-1,82,-1,77,-1,
+        75,-1,81,-1,80,75,-1,-1,
+        74,-1,-1,73,-1,74,-1,-1
+      ]
     },
-    chase: {
-      title: 'Halloween Chase', bpm: 104, mood: 'chase',
-      chords: [[50,53,56],[50,53,56],[51,54,57],[49,52,55],[50,53,56],[53,56,59],[51,54,57],[49,52,55]],
-      melody: [74,77,80,83,86,83,80,77, 74,-1,75,74,73,74,77,80, 75,78,81,84,87,84,81,78, 73,76,79,82,85,82,79,76, 74,77,80,83,86,89,86,83, 77,80,83,86,89,86,83,80, 75,78,81,84,87,84,81,78, 73,76,79,82,85,82,74,-1]
-    }
+    laughter: {
+      title: "Haunted Laughter",
+      bpm: 48,
+      mood: "ghost",
+      introSeconds: 3.6,
+      laughPitch: 0.8,
+      seed: 1451,
+      basePitch: 150,
+      sweep: 110,
+      gustPeriod: 10,
+      windGain: 1.4,
+      chords: [[50,56,62],[49,55,61],[48,54,60],[51,57,63],[50,56,62],[46,53,58],[49,55,61],[50,56,62]],
+      melody: [
+        62,-1,-1,61,-1,56,-1,-1,
+        61,-1,67,-1,66,61,-1,-1,
+        60,-1,-1,66,-1,65,60,-1,
+        63,-1,69,-1,68,-1,63,-1,
+        62,-1,68,-1,67,62,-1,-1,
+        58,-1,65,-1,64,-1,58,-1,
+        61,-1,67,66,-1,61,-1,-1,
+        62,-1,-1,61,-1,62,-1,-1
+      ]
+    },
+    cackle: {
+      title: "Midnight Cackle",
+      bpm: 62,
+      mood: "ghost",
+      introSeconds: 3.6,
+      laughPitch: 1.05,
+      seed: 9231,
+      basePitch: 260,
+      sweep: 70,
+      gustPeriod: 6,
+      windGain: 1.15,
+      chords: [[57,63,69],[56,62,68],[53,59,65],[58,64,70],[57,63,69],[54,60,66],[56,62,68],[57,63,69]],
+      melody: [
+        81,-1,80,-1,75,-1,-1,74,
+        80,-1,-1,86,-1,85,80,-1,
+        77,-1,83,-1,82,-1,77,-1,
+        82,-1,88,-1,87,82,-1,-1,
+        81,-1,87,-1,86,-1,81,-1,
+        78,-1,-1,84,-1,83,78,-1,
+        80,-1,86,85,-1,80,-1,-1,
+        81,-1,-1,80,-1,81,-1,-1
+      ]
+    },
   };
   function render(context, id) {
-    const song = tracks[id] || tracks.haunted;
+    const song = tracks[id] || tracks.ghost;
     const sampleRate = 22050, step = 30 / song.bpm;
     const duration = song.melody.length * step;
     const buffer = context.createBuffer(1, Math.ceil(duration * sampleRate), sampleRate);
@@ -67,16 +104,17 @@ window.MafiaMusic = (() => {
     if (song.mood === 'ghost') {
       // Wind and breath-like swells, with gliding ghost calls. Seeded noise
       // keeps a track reproducible; randomness here is unrelated to role deals.
-      let seed = 73417, slowNoise = 0, fastNoise = 0, ghostPhase = 0;
+      let seed = song.seed || 73417, slowNoise = 0, fastNoise = 0, ghostPhase = 0;
       for (let i = 0; i < data.length; i++) {
         const t = i / sampleRate;
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
         const white = seed / 0x80000000 - 1;
         slowNoise += 0.035 * (white - slowNoise);
         fastNoise += 0.18 * (white - fastNoise);
-        const wind = (fastNoise - slowNoise) * (0.025 + 0.025 * Math.sin(t * 0.8) ** 2);
-        const cycle = (t + 1) % 8, swell = Math.sin(Math.PI * cycle / 8) ** 4;
-        ghostPhase += 2 * Math.PI * (210 + 85 * Math.sin(t * 0.55) + 7 * Math.sin(t * 5)) / sampleRate;
+        const wind = (fastNoise - slowNoise) * (0.025 + 0.025 * Math.sin(t * 0.8) ** 2) * (song.windGain || 1);
+        const period = song.gustPeriod || 8;
+        const cycle = (t + 1) % period, swell = Math.sin(Math.PI * cycle / period) ** 4;
+        ghostPhase += 2 * Math.PI * ((song.basePitch || 210) + (song.sweep || 85) * Math.sin(t * 0.55) + 7 * Math.sin(t * 5)) / sampleRate;
         data[i] += wind + Math.sin(ghostPhase) * swell * 0.12;
       }
     } else if (song.mood === 'chase') {
@@ -92,6 +130,48 @@ window.MafiaMusic = (() => {
     const level = peak > 0 ? 0.75 / peak : 1;
     const fade = Math.round(sampleRate * 0.02);
     for (let i = 0; i < data.length; i++) data[i] *= level * Math.min(1, i / fade, (data.length - 1 - i) / fade);
+    if (song.introSeconds) {
+      const introLength = Math.round(song.introSeconds * sampleRate);
+      const combined = context.createBuffer(1, introLength + data.length, sampleRate);
+      const output = combined.getChannelData(0);
+      output.set(data, introLength);
+      const laugh = new Float32Array(introLength);
+      let noiseSeed = song.seed || 113;
+      // Six voiced "ha" bursts: breathy attacks, vowel formants, descending
+      // pitch and short room echoes create an original synthetic horror laugh.
+      for (let burst = 0; burst < 6; burst++) {
+        const at = 0.04 + burst * 0.49, length = 0.32 + burst * 0.026;
+        const base = (160 - burst * 15) * song.laughPitch;
+        const weights = Array.from({length:28}, (_, index) => {
+          const harmonic = index + 1, frequency = harmonic * base;
+          return 0.16 / harmonic + 0.9 * Math.exp(-Math.pow((frequency - 650) / 160, 2))
+            + 0.7 * Math.exp(-Math.pow((frequency - 1100) / 210, 2))
+            + 0.25 * Math.exp(-Math.pow((frequency - 2500) / 350, 2));
+        });
+        let phase = 0;
+        for (let i = 0; i < length * sampleRate; i++) {
+          const t = i / sampleRate, position = Math.round(at * sampleRate) + i;
+          if (position >= introLength) break;
+          phase += 2 * Math.PI * base * (1.12 - 0.3 * t / length + 0.025 * Math.sin(t * 33)) / sampleRate;
+          let vowel = 0;
+          weights.forEach((weight, harmonic) => { vowel += weight * Math.sin(phase * (harmonic + 1)); });
+          noiseSeed = (Math.imul(noiseSeed, 1664525) + 1013904223) >>> 0;
+          const breath = (noiseSeed / 0x80000000 - 1) * 0.12 * Math.exp(-t * 22);
+          const envelope = Math.sin(Math.PI * t / length) ** 0.8;
+          laugh[position] += (Math.tanh(vowel * 0.65) + breath + 0.12 * Math.sin(phase * 0.5)) * envelope;
+        }
+      }
+      const dry = laugh.slice();
+      for (let i = 0; i < laugh.length; i++) {
+        const echo1 = i - Math.round(sampleRate * 0.13), echo2 = i - Math.round(sampleRate * 0.27);
+        if (echo1 >= 0) laugh[i] += dry[echo1] * 0.24;
+        if (echo2 >= 0) laugh[i] += dry[echo2] * 0.1;
+      }
+      let laughPeak = 0;
+      for (const value of laugh) laughPeak = Math.max(laughPeak, Math.abs(value));
+      for (let i = 0; i < laugh.length; i++) output[i] = laugh[i] * (laughPeak ? 0.72 / laughPeak : 1);
+      return combined;
+    }
     return buffer;
   }
   return {tracks, render};

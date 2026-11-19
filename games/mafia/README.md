@@ -92,10 +92,11 @@ labels are localized; custom names remain as entered. Buttons stay English.
 
 ## Night music
 
-**Night music** plays one of five original loops: **Moonlit Town**, **Secret Steps**,
-**Haunted Music Box**, **Ghosts in the Attic**, or **Halloween Chase**. Each has a melody, chord accompaniment, and
-bass line, and loops continuously through the night. No external audio download
-or streaming service is required: `music.js` renders the selected song locally.
+**Night music** offers three ghost soundscapes: **Ghosts in the Attic**,
+**Haunted Laughter**, and **Midnight Cackle**. The original Attic arrangement is
+unchanged; the others begin with distinct synthetic horror laughs and continue
+with ghost wind and wails. `music.js` generates the audio locally without an
+external streaming service.
 
 Choose **Track**, adjust **Night volume**, and tap **Test music** to start a preview and tap **Stop music** to stop it. The track choice is remembered on this device when storage is available.
 Same-settings replay keeps the track and volume. Music fades out during daytime,
@@ -133,7 +134,7 @@ request, preventing delayed playback after stopping.
 ## Defaults and remembered names
 
 Night volume uses five levels: **1 = 10%**, **2 = 20%**, **3 = 30%**,
-**4 = 50%**, **5 = 100%**. Level 3 is the default on page load. Use the
+**4 = 50%**, **5 = 100%**. Level 4 (50%) is the default on page load. Use the
 Night music checkbox to mute. The selected level stays on same-settings replay.
 
 Game language defaults to English only if no valid previous choice is saved;
@@ -145,15 +146,6 @@ count preserves every seat's name, including seats temporarily hidden. Clearing
 a name explicitly saves it as blank. Only names and preferences are stored,
 not secret roles or an active game. If storage is blocked, names still survive
 player-count changes during the current visit.
-
-### Spooky tracks
-
-Quiet Dawn has been removed; its saved selection migrates to Haunted Music Box,
-which is also the default for new visitors. The original two tracks remain.
-The new tracks have distinct arrangements: detuned music-box bells and diminished
-harmony; breathy ghost wind with gliding wails; and a fast Halloween ostinato over
-a double-heartbeat pulse. Their audio is generated locally, without external
-recordings, copyrighted songs, or sudden high-volume jumps.
 
 How to play and the end-of-game replay explanation also follow Game language;
 bilingual help shows English first, then Simplified Chinese. Action button
@@ -167,7 +159,7 @@ On means one night only: any death gives Mafia the win; no deaths gives the
 Villagers the win. No discussion, voting, or second night is offered. Off keeps
 the classic rules. Same-settings replay preserves the mode choice.
 
-After the opening narration finishes, the game waits about three seconds before
+After the opening narration finishes, the game waits about five seconds before
 waking the Mafia. It no longer adds a fixed 9/18-second opening countdown.
 Native speech state also detects an idle queue if Safari misses end callbacks.
 
@@ -179,3 +171,18 @@ check is deferred so survivors can vote. Eliminating Mafia gives the town a win;
 eliminating the last town player gives Mafia a win. Parity is checked normally
 after a daytime vote. If no town player remains at dawn, Mafia wins immediately.
 Simple mode and classic games with 4–8 players keep their existing win rules.
+
+## Current ghost soundtrack selection
+
+Only **Ghosts in the Attic**, **Haunted Laughter**, and **Midnight Cackle** are
+available. All other tracks have been removed; old saved selections migrate to
+Ghosts in the Attic. The original Ghosts in the Attic audio is preserved.
+
+The two new tracks start with an original synthetic horror laugh, then use
+different ghost-wind/wail arrangements. Each preview and each new night starts
+the selected track from its beginning. The laugh plays once on that start;
+`loopStart` skips the intro on subsequent ambience loops. Changing phases or
+pausing/resuming does not restart the laugh. Peak levels are normalized.
+
+The opening post-narration pause is now five seconds. Night volume defaults
+to Level 4 (50%); the five-level mapping is unchanged.
