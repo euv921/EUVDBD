@@ -92,11 +92,11 @@ labels are localized; custom names remain as entered. Buttons stay English.
 
 ## Night music
 
-**Night music** offers three ghost soundscapes: **Ghosts in the Attic**,
-**Haunted Laughter**, and **Midnight Cackle**. The original Attic arrangement is
-unchanged; the others begin with distinct synthetic horror laughs and continue
-with ghost wind and wails. `music.js` generates the audio locally without an
-external streaming service.
+**Night music** offers **Ghosts in the Attic**, **Witch’s Cackle**,
+**Bubbling Cauldron**, **Witch’s Forest**, and **Midnight Coven**. Attic is unchanged.
+Witch’s Cackle uses a real CC0 voice recording; the others have no laugh intro.
+Audio is generated locally and the recording is bundled, with no runtime streaming.
+See [CREDITS.md](CREDITS.md) for the recording source and license.
 
 Choose **Track**, adjust **Night volume**, and tap **Test music** to start a preview and tap **Stop music** to stop it. The track choice is remembered on this device when storage is available.
 Same-settings replay keeps the track and volume. Music fades out during daytime,
@@ -172,17 +172,16 @@ eliminating the last town player gives Mafia a win. Parity is checked normally
 after a daytime vote. If no town player remains at dawn, Mafia wins immediately.
 Simple mode and classic games with 4–8 players keep their existing win rules.
 
-## Current ghost soundtrack selection
+## Witch-themed soundtrack selection
 
-Only **Ghosts in the Attic**, **Haunted Laughter**, and **Midnight Cackle** are
-available. All other tracks have been removed; old saved selections migrate to
-Ghosts in the Attic. The original Ghosts in the Attic audio is preserved.
+The disliked Haunted Laughter and Midnight Cackle tracks are removed; saved
+selections for either migrate to Ghosts in the Attic. Only Witch’s Cackle has a
+laugh (a real voice effect, not the previous synthetic laughs). Its intro plays
+once at the start of a preview/new night, then the ghost ambience loops.
 
-The two new tracks start with an original synthetic horror laugh, then use
-different ghost-wind/wail arrangements. Each preview and each new night starts
-the selected track from its beginning. The laugh plays once on that start;
-`loopStart` skips the intro on subsequent ambience loops. Changing phases or
-pausing/resuming does not restart the laugh. Peak levels are normalized.
+Other choices are laugh-free: cauldron bubbling, forest wind/creaks/owl-like
+calls, and low ritual-like humming. Ghosts in the Attic is sample-for-sample
+unchanged. The opening remains five seconds and the default volume Level 4.
 
 The opening post-narration pause is now five seconds. Night volume defaults
 to Level 4 (50%); the five-level mapping is unchanged.
