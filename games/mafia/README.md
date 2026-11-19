@@ -167,6 +167,15 @@ On means one night only: any death gives Mafia the win; no deaths gives the
 Villagers the win. No discussion, voting, or second night is offered. Off keeps
 the classic rules. Same-settings replay preserves the mode choice.
 
-After the opening narration finishes, the game waits about one second before
+After the opening narration finishes, the game waits about three seconds before
 waking the Mafia. It no longer adds a fixed 9/18-second opening countdown.
 Native speech state also detects an idle queue if Safari misses end callbacks.
+
+### Three-player classic voting
+
+With Simple mode off, a three-player game offers daytime discussion/voting after
+a night death as long as at least one town player remains. The morning parity
+check is deferred so survivors can vote. Eliminating Mafia gives the town a win;
+eliminating the last town player gives Mafia a win. Parity is checked normally
+after a daytime vote. If no town player remains at dawn, Mafia wins immediately.
+Simple mode and classic games with 4–8 players keep their existing win rules.

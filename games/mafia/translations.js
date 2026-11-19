@@ -167,5 +167,6 @@ window.MafiaTranslations = {
   "Listening…": "请听语音……",
   "The Villagers win.": "平民赢了。",
   "At dawn, a protected target survives. In Simple mode, the game ends after one night: if anyone died, the Mafia wins; if nobody died, the Villagers win. There is no discussion or voting.": "天亮时，受到保护的目标会存活。简易模式只玩一晚：有人死亡则杀手赢；无人死亡则平民赢。没有讨论或投票。",
-  "With Simple mode off, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.": "关闭简易模式后，白天一起讨论，投票淘汰一人或跳过投票。杀手出局则平民阵营获胜；只剩一名其他玩家时，杀手获胜。出局玩家不再行动，并继续保密身份。"
+  "With Simple mode off, discuss together during the day, then vote one player out or skip voting. The town wins when the Mafia is out. The Mafia wins when only one other player remains. Eliminated players keep their role secret and do not act.": "关闭简易模式后，白天一起讨论，投票淘汰一人或跳过投票。杀手出局则平民阵营获胜；只剩一名其他玩家时，杀手获胜。出局玩家不再行动，并继续保密身份。",
+  "In three-player games with Simple mode off, survivors get a daytime vote after a night death. Win checks happen after voting; if no civilians remain, Mafia wins immediately.": "三人游戏关闭简易模式后，即使夜间有人死亡，存活玩家仍有白天讨论和投票的机会。投票后再判断胜负；如果已没有平民阵营玩家，杀手立即赢。"
 };

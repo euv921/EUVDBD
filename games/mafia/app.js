@@ -380,7 +380,7 @@
     nightIntro(); chime();
   }
   function shortOpeningPause(done) {
-    const begin = () => countdown(1, done);
+    const begin = () => countdown(3, done);
     if (speechPending === 0) { begin(); return; }
     const clock = el('span', gameText('Listening…'), 'clock');
     host.append(clock);
@@ -451,11 +451,15 @@
     attack = null; protection = null;
     morning(victim);
   }
-  function winner() {
+  function winner(afterNight = false) {
     if (simpleMode) return players.some(p => !p.alive) ? 'Mafia' : 'Villager';
     const mafia = players.filter(p => p.alive && p.role === 'Mafia').length;
     const town = players.filter(p => p.alive && p.role !== 'Mafia').length;
-    return mafia === 0 ? 'Town' : mafia >= town ? 'Mafia' : null;
+    if (mafia === 0) return 'Town';
+    // Three-player classic games get a daytime vote after a night death.
+    // Parity still resolves normally after voting; no-town-left is terminal.
+    if (afterNight && players.length === 3 && town > 0) return null;
+    return mafia >= town ? 'Mafia' : null;
   }
   function victorySentence(won) {
     return won === 'Town' ? 'The town wins.' : won === 'Villager' ? (players.length > 3 ? 'The Villagers win.' : 'The Villager wins.') : 'The Mafia wins.';
@@ -467,7 +471,7 @@
     const result = victim === null ? g('Nobody died last night.') : g('{name} died.', {name: playerName(victim)});
     startStage('morning', null);
     chime();
-    const won = winner();
+    const won = winner(true);
     panel('☀', g('MORNING · DAY {night}', {night}), g('Everyone, open your eyes.'));
     host.append(displayText('p', result, 'morning-result'));
     const announcements = [g('Everyone, open your eyes.'), result];
