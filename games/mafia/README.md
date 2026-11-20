@@ -185,3 +185,11 @@ unchanged. The opening remains five seconds and the default volume Level 4.
 
 The opening post-narration pause is now five seconds. Night volume defaults
 to Level 4 (50%); the five-level mapping is unchanged.
+
+## Music lead-in
+
+At the beginning of each night, music starts immediately and host narration
+(“It is night…”) waits two seconds. This lets the witch cackle be heard before
+the host speaks. The existing five-second pause after opening narration ends
+is unchanged. Pausing, resetting, or leaving the active night cancels any
+pending speech start; resuming the opening begins a fresh two-second lead-in.

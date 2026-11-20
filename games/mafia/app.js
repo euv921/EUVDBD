@@ -407,8 +407,12 @@
   function nightIntro() {
     startStage('night-intro', nightIntro);
     panel('☾', g('NIGHT {night}', {night}), g('Everyone, close your eyes.'), g('Listen to the host.'));
-    say(g('It is night. Everyone, close your eyes.'));
-    shortOpeningPause(mafiaTurn);
+    // Let the music (including the witch cackle) play before host speech.
+    later(() => {
+      if (paused || phase !== 'night-intro') return;
+      say(g('It is night. Everyone, close your eyes.'));
+      shortOpeningPause(mafiaTurn);
+    }, 2000);
   }
   function mafiaTurn() {
     startStage('mafia', mafiaTurn);
