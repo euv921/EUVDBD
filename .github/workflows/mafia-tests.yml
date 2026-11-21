@@ -1,0 +1,31 @@
+name: Mafia browser regressions
+
+on:
+  push:
+    branches: [main]
+    paths: ['games/mafia/**', 'tests/mafia/**', '.github/workflows/mafia-tests.yml']
+  pull_request:
+    paths: ['games/mafia/**', 'tests/mafia/**', '.github/workflows/mafia-tests.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r tests/mafia/requirements.txt
+      - run: python -m playwright install --with-deps ${{ matrix.browser }}
+      - run: python -m unittest discover -s tests/mafia -v
+        env:
+          MAFIA_BROWSER: ${{ matrix.browser }}

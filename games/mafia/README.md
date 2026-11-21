@@ -10,7 +10,7 @@ one player button appears in each corner around the host instructions.
 
 The host speaks using the browser's built-in text-to-speech. Optional quiet night
 sounds use Web Audio; no microphone, account, server, or downloaded audio is needed.
-Tap **Test voice** and adjust volume before playing. Browser voice availability and
+Use **Test voice** if you want to preview the host, and adjust volume before playing. Browser voice availability and
 sound output depend on the device; every spoken instruction is also written on screen.
 
 The Mafia chooses one other living player to attack. The Doctor chooses any living
@@ -93,7 +93,7 @@ labels are localized; custom names remain as entered. Buttons stay English.
 ## Night music
 
 **Night music** offers **Ghosts in the Attic**, **Witch’s Cackle**,
-**Bubbling Cauldron**, **Witch’s Forest**, and **Midnight Coven**. Attic is unchanged.
+**Witch’s Forest**. Attic is unchanged.
 Witch’s Cackle uses a real CC0 voice recording; the others have no laugh intro.
 Audio is generated locally and the recording is bundled, with no runtime streaming.
 See [CREDITS.md](CREDITS.md) for the recording source and license.
@@ -179,9 +179,35 @@ selections for either migrate to Ghosts in the Attic. Only Witch’s Cackle has 
 laugh (a real voice effect, not the previous synthetic laughs). Its intro plays
 once at the start of a preview/new night, then the ghost ambience loops.
 
-Other choices are laugh-free: cauldron bubbling, forest wind/creaks/owl-like
-calls, and low ritual-like humming. Ghosts in the Attic is sample-for-sample
+The other choices are laugh-free: ghost ambience and forest wind/creaks/owl-like calls. Ghosts in the Attic is sample-for-sample
 unchanged. The opening remains five seconds and the default volume Level 4.
 
 The opening post-narration pause is now five seconds. Night volume defaults
 to Level 4 (50%); the five-level mapping is unchanged.
+
+## Original audio startup
+
+The host starts immediately when Begin Night is tapped, using the audio and
+speech code from commit 47794b7. There is no music lead-in, speech primer, or
+new speech-triggered audio recovery. The existing five-second pause after the
+opening narration finishes is unchanged.
+
+Bubbling Cauldron and Midnight Coven are removed. Saved selections for either
+fall back to Ghosts in the Attic. The two requested explanatory paragraphs are
+removed from How to play in every game language.
+
+## Browser regression tests
+
+```sh
+pip install -r tests/mafia/requirements.txt
+python -m playwright install --with-deps chromium webkit
+python -m unittest discover -s tests/mafia -v
+MAFIA_BROWSER=webkit python -m unittest discover -s tests/mafia -v
+```
+
+Tests cover the original immediate narration, all 36 combinations of music
+tracks/languages/voice and music toggles, real generated audio samples, preview
+controls, volume, pause/resume, replay, simple/classic results, saved settings,
+and guide cleanup. GitHub Actions runs the suite in Chromium and WebKit.
+Speech is simulated; actual iPhone audio routing and concurrent voice/music
+playback still require a physical device check.

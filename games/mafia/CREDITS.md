@@ -14,6 +14,6 @@ resampled into the game soundtrack, level-normalized, and mixed with short
 room echoes. The original recording is approximately 1.16 seconds long.
 It is used only in Witch’s Cackle. Other soundscapes have no laughter.
 
-The wind, bubbles, owl-like calls, creaks, and ritual ambience are original
+The wind, owl-like calls, and creaks are original
 procedural audio generated locally. Ghosts in the Attic retains its original
 samples. No audio is streamed from third-party services during gameplay.
