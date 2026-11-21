@@ -93,7 +93,7 @@ labels are localized; custom names remain as entered. Buttons stay English.
 ## Night music
 
 **Night music** offers **Ghosts in the Attic**, **Witch’s Cackle**,
-**Bubbling Cauldron**, **Witch’s Forest**, and **Midnight Coven**. Attic is unchanged.
+**Witch’s Forest**. Attic is unchanged.
 Witch’s Cackle uses a real CC0 voice recording; the others have no laugh intro.
 Audio is generated locally and the recording is bundled, with no runtime streaming.
 See [CREDITS.md](CREDITS.md) for the recording source and license.
@@ -179,8 +179,7 @@ selections for either migrate to Ghosts in the Attic. Only Witch’s Cackle has 
 laugh (a real voice effect, not the previous synthetic laughs). Its intro plays
 once at the start of a preview/new night, then the ghost ambience loops.
 
-Other choices are laugh-free: cauldron bubbling, forest wind/creaks/owl-like
-calls, and low ritual-like humming. Ghosts in the Attic is sample-for-sample
+The other choices are laugh-free: ghost ambience and forest wind/creaks/owl-like calls. Ghosts in the Attic is sample-for-sample
 unchanged. The opening remains five seconds and the default volume Level 4.
 
 The opening post-narration pause is now five seconds. Night volume defaults
@@ -193,3 +192,6 @@ At the beginning of each night, music starts immediately and host narration
 the host speaks. The existing five-second pause after opening narration ends
 is unchanged. Pausing, resetting, or leaving the active night cancels any
 pending speech start; resuming the opening begins a fresh two-second lead-in.
+
+Bubbling Cauldron and Midnight Coven are removed. Saved selections for either
+fall back to Ghosts in the Attic, just like other removed tracks.
