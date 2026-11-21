@@ -50,6 +50,7 @@
   let previewUntil = 0, musicPreviewActive = false, musicPreviewRequest = 0;
   let voicePreviewActive = false, voicePreviewTimer = null;
   let musicSource = null, playingTrack = null;
+  let musicRecovery = null;
   const musicBuffers = new Map();
   let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
   const chimeOscillators = new Set();
@@ -88,7 +89,13 @@
       if (locale === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
       if (voice) utterance.voice = voice;
       let finished = false;
-      const finish = () => { if (!finished && token === speechToken) { finished = true; speechPending = Math.max(0, speechPending - 1); if (speechPending === 0 && test) { clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false); } } };
+      const finish = () => {
+        if (!finished && token === speechToken) {
+          finished = true; speechPending = Math.max(0, speechPending - 1);
+          if (speechPending === 0 && test) { clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false); }
+        }
+        if (speechPending === 0) recoverMusic();
+      };
       utterance.onend = finish;
       utterance.onerror = event => {
         finish();
@@ -120,15 +127,21 @@
     clearTimeout(speechTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
-  function useMediaPlaybackSession() {
-    // iOS 17+: Web Audio defaults to an ambient session that obeys the
-    // Ring/Silent switch. Explicit media playback uses the media channel.
-    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; }
-    catch (_) { /* Older/unsupported browsers retain ordinary playback. */ }
+  function configureAudioSession() {
+    // Ambient permits mixing. Playback bypasses Silent Mode but may compete
+    // with iOS's separate native speech session; it is explicitly opt-in.
+    try { if (navigator.audioSession) navigator.audioSession.type = $('audioMode').value === 'silent' ? 'playback' : 'ambient'; }
+    catch (_) { /* Unsupported browsers retain ordinary playback. */ }
   }
+  function updateAudioModeHint() {
+    $('audioModeHint').textContent = $('audioMode').value === 'silent'
+      ? 'If music cuts out during speech, choose Voice + music and turn off iPhone Silent Mode.'
+      : 'For voice + music on iPhone, turn Silent Mode off.';
+  }
+
   function unlockAudio() {
     if (!$('sound').checked) return Promise.resolve(false);
-    useMediaPlaybackSession();
+    configureAudioSession();
     try {
       if (!audio) {
         const Context = window.AudioContext || window.webkitAudioContext;
@@ -137,7 +150,9 @@
         musicGain = audio.createGain();
         musicGain.gain.value = 0;
         musicGain.connect(audio.destination);
-
+        audio.addEventListener('statechange', () => {
+          if (speechPending === 0) recoverMusic();
+        });
       }
       return audio.resume().then(() => {
         if (audio.state !== 'running') $('audioNote').textContent = 'Sound is paused by the browser. Tap Test music again.';
@@ -154,12 +169,30 @@
   function isNight() {
     return ['night-intro', 'mafia', 'mafia-close', 'doctor', 'doctor-close'].includes(phase);
   }
+  function wantsMusic() {
+    return $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
+  }
+  function recoverMusic() {
+    if (!audio || !wantsMusic() || document.hidden) return;
+    configureAudioSession();
+    if (audio.state === 'running') { ambience(); return; }
+    if (audio.state === 'closed' || musicRecovery) return;
+    try {
+      musicRecovery = audio.resume().then(() => {
+        if (wantsMusic() && !document.hidden && audio.state === 'running') ambience();
+      }).catch(() => {
+        if (wantsMusic()) $('audioNote').textContent = 'Music could not resume. Turn Night music off and on; on iPhone, turn Silent Mode off.';
+      }).finally(() => { musicRecovery = null; });
+    } catch (_) {
+      $('audioNote').textContent = 'Music could not resume. Turn Night music off and on.';
+    }
+  }
   function restartMusic() {
     if (musicSource) { musicSource.stop(); musicSource.disconnect(); }
     musicSource = null; playingTrack = null;
   }
   function ensureMusic() {
-    useMediaPlaybackSession();
+    configureAudioSession();
     const track = $('musicTrack').value;
     if (musicSource && playingTrack === track) return;
     if (musicSource) { musicSource.stop(); musicSource.disconnect(); }
@@ -177,7 +210,7 @@
     if (!audio || !musicGain) return;
     const t = audio.currentTime;
     musicGain.gain.cancelScheduledValues(t);
-    const playing = $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
+    const playing = wantsMusic();
     if (playing) ensureMusic();
     musicGain.gain.setTargetAtTime(playing ? 0.4 * volumeRatio() : 0, t, 0.15);
   }
@@ -382,7 +415,7 @@
     actions(button(t('Begin the first night'), startNight));
   }
   function startNight() {
-    unlockAudio(); restartMusic(); night++; attack = null; protection = null;
+    unlockAudio().then(ambience); restartMusic(); night++; attack = null; protection = null;
     nightIntro(); chime();
   }
   function shortOpeningPause(done) {
@@ -399,7 +432,7 @@
       // Safari can omit speech-end callbacks. Confirm the native queue is idle
       // rather than adding a long fixed pause after the Chinese narration.
       if (speechPending === 0 || now >= speechUntil || (idleSince !== null && now - idleSince >= 500)) {
-        speechPending = 0;
+        speechPending = 0; recoverMusic();
         clearInterval(interval); interval = null; clock.remove(); begin();
       }
     }, 100);
@@ -540,7 +573,7 @@
   }
   function resumeNight() {
     if (!paused) return;
-    $('pauseDialog').close(); paused = false; unlockAudio();
+    $('pauseDialog').close(); paused = false; unlockAudio().then(ambience);
     if (resumeStage) resumeStage();
   }
   function reset() {
@@ -552,6 +585,13 @@
     $('table').hidden = true; $('setup').hidden = false; $('newGame').hidden = true;
     document.body.classList.remove('daytime');
   }
+  try { if (localStorage.getItem('mafia-audio-mode') === 'silent') $('audioMode').value = 'silent'; } catch (_) {}
+  updateAudioModeHint();
+  $('audioMode').addEventListener('change', () => {
+    updateAudioModeHint(); configureAudioSession();
+    if ($('sound').checked) unlockAudio().then(ambience);
+    try { localStorage.setItem('mafia-audio-mode', $('audioMode').value); } catch (_) {}
+  });
   $('gameLanguage').addEventListener('change', () => {
     gameLanguage = normalizeLanguage($('gameLanguage').value);
     applyGameInstructions();

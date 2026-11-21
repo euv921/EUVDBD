@@ -114,7 +114,7 @@ class MafiaAudioTests(unittest.TestCase):
         self.assertEqual(self.page.evaluate('__audioTest.spoken.filter(u => u.volume !== 0).map(u => u.text)'),
                          ['It is night. Everyone, close your eyes.', '天黑请闭眼。'])
         self.assertEqual(self.page.locator('#testVoice').get_attribute('aria-pressed'), 'false')
-        self.assertEqual(self.page.evaluate('__audioTest.session'), 'playback')
+        self.assertEqual(self.page.evaluate('__audioTest.session'), 'ambient')
 
     def test_fresh_start_matrix(self):
         for language in ['en', 'zh-CN', 'bilingual']:
@@ -289,6 +289,49 @@ class MafiaAudioTests(unittest.TestCase):
             self.page.evaluate('(id) => localStorage.setItem("mafia-music-track", id)', removed)
             self.page.reload()
             expect(self.page.locator('#musicTrack')).to_have_value('ghost')
+
+    def test_music_has_real_samples_while_host_is_still_speaking(self):
+        expect(self.page.locator('#audioMode')).to_have_value('mix')
+        self.deal(language='bilingual')
+        self.page.evaluate('__audioTest.holdSpeech = true')
+        self.begin()
+        self.advance(900)
+        self.assertTrue(self.page.evaluate('speechSynthesis.speaking'))
+        self.audio_running()
+        self.signal()
+        self.page.evaluate('__audioTest.finish()')
+        self.assertTrue(self.page.evaluate('speechSynthesis.speaking'))
+        self.signal()
+        self.page.evaluate('__audioTest.finish()')
+        self.signal()
+
+    def test_exclusive_mode_is_opt_in_and_recovers_after_speech(self):
+        self.page.locator('#audioMode').select_option('silent')
+        self.page.reload()
+        expect(self.page.locator('#audioMode')).to_have_value('silent')
+        self.deal(language='bilingual')
+        self.begin()
+        self.advance(900)
+        self.audio_running()
+        self.signal()
+        self.assertEqual(self.page.evaluate('__audioTest.session'), 'playback')
+        self.assertEqual(self.page.evaluate('__audioTest.contexts[0].sources.length'), 1)
+        self.page.locator('#audioMode').select_option('mix')
+        self.assertEqual(self.page.evaluate('__audioTest.session'), 'ambient')
+
+    def test_music_recovers_from_interruption_and_stays_muted_when_requested(self):
+        self.page.evaluate('__audioTest.interruptAlways = true')
+        self.deal(language='bilingual')
+        self.begin()
+        self.advance(900)
+        self.audio_running()
+        self.signal()
+        self.page.evaluate('__audioTest.holdResume = true; __audioTest.contexts[0].interrupt()')
+        self.page.wait_for_function('__audioTest.heldResumes.length > 0')
+        self.page.locator('#sound').uncheck()
+        self.page.evaluate('__audioTest.holdResume = false; __audioTest.heldResumes.splice(0).forEach(release => release())')
+        self.page.wait_for_function('__audioTest.contexts[0].gains[0].gain.value < .001', timeout=5000)
+        self.assertEqual(self.page.evaluate('__audioTest.contexts[0].sources.length'), 1)
 
 
 if __name__ == '__main__':

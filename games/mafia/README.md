@@ -104,19 +104,26 @@ pause, mute, or reset, and remains separate from **Spoken host**. Stage chimes
 remain available. If audio is silent, check device media volume, the output
 device, and Safari/iOS sound or silent-mode settings.
 
-### iPhone Silent Mode
+### iPhone audio modes
 
-Before creating/resuming audio and when music playback is requested, the game
-sets `navigator.audioSession.type = 'playback'` when supported. WebKit documents
-this as the iOS 17+ solution for Web Audio that would otherwise obey the
-Ring/Silent switch: https://bugs.webkit.org/show_bug.cgi?id=237322#c6
+**Audio mode** defaults to **Voice + music**, requesting the mixable `ambient`
+audio session when supported. Turn off iPhone Silent Mode for this setting.
+The preference is saved as `mafia-audio-mode` when storage is available.
 
-The setting does not change device media volume, autoplay permission, the music
-checkbox, or the game's volume control. Older browsers without this API keep
-ordinary playback and may still require Silent Mode to be turned off. No
-microphone permission or silent looping media workaround is used. Actual
-hardware-switch behavior needs a check on an iPhone; automated desktop tests
-verify the playback request and unsupported-browser fallback.
+**Play in Silent Mode** remains an opt-in alternative using `playback`. On some
+iPhones, native speech can interrupt that session. If music disappears during
+narration, choose Voice + music and disable the device's Silent Mode.
+The page shows this instruction beside the selector.
+
+When speech ends or is canceled, or an idle audio context is interrupted, the
+game resumes music if it is still requested. Recovery respects mute, pause,
+reset, and stopped previews, and does not restart the soundtrack intro. It waits
+for queued narration to finish before attempting to recover an interrupted
+context. Unsupported/throwing Audio Session APIs fall back to ordinary Web Audio.
+
+The web Audio Session API distinguishes mixing and exclusive sessions:
+https://www.w3.org/TR/audio-session/#audio-session-types
+Actual iPhone speech routing and the Silent Mode switch require device checks.
 
 ## Preview buttons
 
@@ -185,12 +192,12 @@ unchanged. The opening remains five seconds and the default volume Level 4.
 The opening post-narration pause is now five seconds. Night volume defaults
 to Level 4 (50%); the five-level mapping is unchanged.
 
-## Original audio startup
+## Immediate audio startup
 
-The host starts immediately when Begin Night is tapped, using the audio and
-speech code from commit 47794b7. There is no music lead-in, speech primer, or
-new speech-triggered audio recovery. The existing five-second pause after the
-opening narration finishes is unchanged.
+The opening narration starts directly when Begin Night is tapped. There is no
+added music lead-in or speech primer. The existing five-second pause after the
+opening narration finishes is unchanged. Audio mode and interruption recovery
+are independent of that timing.
 
 Bubbling Cauldron and Midnight Coven are removed. Saved selections for either
 fall back to Ghosts in the Attic. The two requested explanatory paragraphs are
@@ -208,6 +215,8 @@ MAFIA_BROWSER=webkit python -m unittest discover -s tests/mafia -v
 Tests cover the original immediate narration, all 36 combinations of music
 tracks/languages/voice and music toggles, real generated audio samples, preview
 controls, volume, pause/resume, replay, simple/classic results, saved settings,
-and guide cleanup. GitHub Actions runs the suite in Chromium and WebKit.
+guide cleanup, samples during a held English/Chinese utterance, audio mode
+persistence, and music recovery after simulated interruptions. GitHub Actions
+runs the suite in Chromium and WebKit.
 Speech is simulated; actual iPhone audio routing and concurrent voice/music
 playback still require a physical device check.

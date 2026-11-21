@@ -1,7 +1,7 @@
 // Use real Web Audio output and simulated speech with direct-tap permission.
-// This does not model concurrent physical iPhone audio routing.
+// Model exclusive-session interruption, without claiming to reproduce all iOS routing.
 window.__audioTest = {contexts: [], spoken: [], inTap: false,
-  unlocked: false, holdSpeech: false, queue: [],
+  unlocked: false, holdSpeech: false, interruptAlways: false, queue: [],
   heldResumes: [], holdResume: false, rejectResume: false, session: 'ambient'};
 const test = window.__audioTest;
 document.addEventListener('click', () => { test.inTap = true; }, true);
@@ -12,6 +12,8 @@ Object.defineProperty(navigator, 'audioSession', {configurable: true, value: {
 const NativeContext = window.AudioContext || window.webkitAudioContext;
 window.AudioContext = class extends NativeContext {
   constructor(...args) { super(...args); test.contexts.push(this); this.gains = []; this.sources = []; this.resumeCalls = 0; }
+  get state() { return this.interrupted ? 'interrupted' : super.state; }
+  interrupt() { this.interrupted = true; super.suspend(); this.dispatchEvent(new Event('statechange')); }
   createGain() { const gain = super.createGain(); this.gains.push(gain); return gain; }
   createBufferSource() {
     const source = super.createBufferSource(); this.sources.push(source);
@@ -22,7 +24,7 @@ window.AudioContext = class extends NativeContext {
   resume() {
     this.resumeCalls++;
     if (test.rejectResume) return Promise.reject(new Error('audio busy'));
-    const resume = () => { return super.resume(); };
+    const resume = () => { this.interrupted = false; return super.resume(); };
     return test.holdResume ? new Promise(resolve => test.heldResumes.push(() => resolve(resume()))) : resume();
   }
 };
@@ -32,6 +34,7 @@ window.SpeechSynthesisUtterance = class {
 function next() {
   if (test.current || !test.queue.length) return;
   const utterance = test.current = test.queue.shift();
+  if (test.session === 'playback' || test.interruptAlways) test.contexts.forEach(context => context.interrupt());
   utterance.onstart?.();
   if (!test.holdSpeech) setTimeout(() => { if (test.current === utterance) finish(); }, 200);
 }
