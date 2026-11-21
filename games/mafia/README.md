@@ -10,7 +10,7 @@ one player button appears in each corner around the host instructions.
 
 The host speaks using the browser's built-in text-to-speech. Optional quiet night
 sounds use Web Audio; no microphone, account, server, or downloaded audio is needed.
-Use **Test voice** if you want to preview the host, and adjust volume before playing. Browser voice availability and
+Tap **Test voice** and adjust volume before playing. Browser voice availability and
 sound output depend on the device; every spoken instruction is also written on screen.
 
 The Mafia chooses one other living player to attack. The Doctor chooses any living
@@ -93,7 +93,7 @@ labels are localized; custom names remain as entered. Buttons stay English.
 ## Night music
 
 **Night music** offers **Ghosts in the Attic**, **Witch’s Cackle**,
-**Witch’s Forest**. Attic is unchanged.
+**Bubbling Cauldron**, **Witch’s Forest**, and **Midnight Coven**. Attic is unchanged.
 Witch’s Cackle uses a real CC0 voice recording; the others have no laugh intro.
 Audio is generated locally and the recording is bundled, with no runtime streaming.
 See [CREDITS.md](CREDITS.md) for the recording source and license.
@@ -179,51 +179,9 @@ selections for either migrate to Ghosts in the Attic. Only Witch’s Cackle has 
 laugh (a real voice effect, not the previous synthetic laughs). Its intro plays
 once at the start of a preview/new night, then the ghost ambience loops.
 
-The other choices are laugh-free: ghost ambience and forest wind/creaks/owl-like calls. Ghosts in the Attic is sample-for-sample
+Other choices are laugh-free: cauldron bubbling, forest wind/creaks/owl-like
+calls, and low ritual-like humming. Ghosts in the Attic is sample-for-sample
 unchanged. The opening remains five seconds and the default volume Level 4.
 
 The opening post-narration pause is now five seconds. Night volume defaults
 to Level 4 (50%); the five-level mapping is unchanged.
-
-## Music lead-in
-
-At the beginning of each night, music starts immediately and host narration
-(“It is night…”) waits two seconds. This lets the witch cackle be heard before
-the host speaks. The existing five-second pause after opening narration ends
-is unchanged. Pausing, resetting, or leaving the active night cancels any
-pending speech start; resuming the opening begins a fresh two-second lead-in.
-
-Bubbling Cauldron and Midnight Coven are removed. Saved selections for either
-fall back to Ghosts in the Attic, just like other removed tracks.
-
-Starting or resuming the opening silently primes browser speech directly from
-the button tap, before the two-second music lead-in. Test voice is optional;
-the game does not require testing the voice before starting a night. The primer
-is canceled with other speech on pause/reset and is independent of night music.
-
-## Audio regression checks
-
-The opening now unlocks Safari speech with an empty utterance, rather than a
-muted spoken word. Music restores its playback session and resumes an interrupted
-Web Audio context after narration ends or is canceled. Recovery respects music
-mute, pause, reset, stopped previews, and an unfinished audio-resume request.
-The two-second music lead-in and five-second post-narration pause remain.
-
-Persistent tests live in `tests/mafia/`, run in Chromium and WebKit through
-`.github/workflows/mafia-tests.yml`, and can also run locally:
-
-```sh
-pip install -r tests/mafia/requirements.txt
-python -m playwright install --with-deps chromium webkit
-python -m unittest discover -s tests/mafia -v
-MAFIA_BROWSER=webkit python -m unittest discover -s tests/mafia -v
-```
-
-The suite checks all 36 combinations of the three tracks, three game languages,
-and independent voice/music toggles. It also checks real generated audio samples,
-preview toggles, all volume levels, interrupted/failed/delayed audio recovery,
-opening timing, pause/reset, bilingual ordering, simple/classic results, replay,
-saved names/language, and the shortened guide. Speech permissions and iOS audio
-session interruptions are simulated; real Web Audio output runs in both engines.
-Desktop WebKit is not a physical iPhone: the Silent Mode switch, installed voices,
-and actual iOS output routing still require device testing.
