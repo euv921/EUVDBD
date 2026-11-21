@@ -10,7 +10,7 @@ one player button appears in each corner around the host instructions.
 
 The host speaks using the browser's built-in text-to-speech. Optional quiet night
 sounds use Web Audio; no microphone, account, server, or downloaded audio is needed.
-Tap **Test voice** and adjust volume before playing. Browser voice availability and
+Use **Test voice** if you want to preview the host, and adjust volume before playing. Browser voice availability and
 sound output depend on the device; every spoken instruction is also written on screen.
 
 The Mafia chooses one other living player to attack. The Doctor chooses any living
@@ -200,3 +200,30 @@ Starting or resuming the opening silently primes browser speech directly from
 the button tap, before the two-second music lead-in. Test voice is optional;
 the game does not require testing the voice before starting a night. The primer
 is canceled with other speech on pause/reset and is independent of night music.
+
+## Audio regression checks
+
+The opening now unlocks Safari speech with an empty utterance, rather than a
+muted spoken word. Music restores its playback session and resumes an interrupted
+Web Audio context after narration ends or is canceled. Recovery respects music
+mute, pause, reset, stopped previews, and an unfinished audio-resume request.
+The two-second music lead-in and five-second post-narration pause remain.
+
+Persistent tests live in `tests/mafia/`, run in Chromium and WebKit through
+`.github/workflows/mafia-tests.yml`, and can also run locally:
+
+```sh
+pip install -r tests/mafia/requirements.txt
+python -m playwright install --with-deps chromium webkit
+python -m unittest discover -s tests/mafia -v
+MAFIA_BROWSER=webkit python -m unittest discover -s tests/mafia -v
+```
+
+The suite checks all 36 combinations of the three tracks, three game languages,
+and independent voice/music toggles. It also checks real generated audio samples,
+preview toggles, all volume levels, interrupted/failed/delayed audio recovery,
+opening timing, pause/reset, bilingual ordering, simple/classic results, replay,
+saved names/language, and the shortened guide. Speech permissions and iOS audio
+session interruptions are simulated; real Web Audio output runs in both engines.
+Desktop WebKit is not a physical iPhone: the Silent Mode switch, installed voices,
+and actual iOS output routing still require device testing.

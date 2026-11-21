@@ -50,6 +50,7 @@
   let previewUntil = 0, musicPreviewActive = false, musicPreviewRequest = 0;
   let voicePreviewActive = false, voicePreviewTimer = null;
   let musicSource = null, playingTrack = null;
+  let musicRecovery = null;
   const musicBuffers = new Map();
   let speechTimer = null, speechToken = 0, speechPending = 0, speechUntil = 0;
   const chimeOscillators = new Set();
@@ -88,7 +89,19 @@
       if (locale === 'zh-CN' && voices.length && !voice) $('audioNote').textContent = t('No Mandarin voice was found. Your browser will try Chinese speech; if it is silent, install a Mandarin voice in device settings.');
       if (voice) utterance.voice = voice;
       let finished = false;
-      const finish = () => { if (!finished && token === speechToken) { finished = true; speechPending = Math.max(0, speechPending - 1); if (speechPending === 0 && test) { clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false); } } };
+      const finish = () => {
+        if (!finished && token === speechToken) {
+          finished = true;
+          speechPending = Math.max(0, speechPending - 1);
+          if (speechPending === 0) {
+            if (test) { clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false); }
+            recoverMusic();
+          }
+        }
+        // A canceled callback can arrive after a new phase starts. Recover
+        // only music currently requested, never an old preview or phase.
+        if (token !== speechToken && speechPending === 0) recoverMusic();
+      };
       utterance.onend = finish;
       utterance.onerror = event => {
         finish();
@@ -114,11 +127,14 @@
   let speechPrimer = null;
   function unlockSpeechFromGesture() {
     if (!$('voice').checked || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
-    const primer = new SpeechSynthesisUtterance('Ready');
-    primer.volume = 0;
+    // Unlock without a muted spoken word taking over the iOS audio session.
+    const primer = new SpeechSynthesisUtterance('');
     primer.lang = gameLocales()[0] === 'zh-CN' ? 'zh-CN' : 'en-US';
     speechPrimer = primer;
-    const finish = () => { if (speechPrimer === primer) speechPrimer = null; };
+    const finish = () => {
+      if (speechPrimer === primer) speechPrimer = null;
+      if (speechPending === 0) recoverMusic();
+    };
     primer.onend = finish;
     primer.onerror = finish;
     try { speechSynthesis.speak(primer); } catch (_) { finish(); }
@@ -151,7 +167,10 @@
         musicGain = audio.createGain();
         musicGain.gain.value = 0;
         musicGain.connect(audio.destination);
-
+        audio.addEventListener('statechange', () => {
+          // Let narration finish before reclaiming iOS's shared audio session.
+          if (speechPending === 0 && !speechPrimer) recoverMusic();
+        });
       }
       return audio.resume().then(() => {
         if (audio.state !== 'running') $('audioNote').textContent = 'Sound is paused by the browser. Tap Test music again.';
@@ -167,6 +186,28 @@
   }
   function isNight() {
     return ['night-intro', 'mafia', 'mafia-close', 'doctor', 'doctor-close'].includes(phase);
+  }
+  function wantsMusic() {
+    return $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
+  }
+  function recoverMusic() {
+    if (!audio || !wantsMusic() || document.hidden) return;
+    useMediaPlaybackSession();
+    if (audio.state === 'running') { ambience(); return; }
+    if (audio.state === 'closed' || musicRecovery) return;
+    // A resume can stay pending while iOS holds the session. Its completion
+    // must still respect mute, pause, reset, and stopped previews.
+    try {
+      musicRecovery = audio.resume().then(() => {
+        if (!wantsMusic() || document.hidden) return;
+        if (audio.state === 'running') ambience();
+        else $('audioNote').textContent = 'Music is paused by the browser. Pause and resume the night, or tap Test music.';
+      }).catch(() => {
+        if (wantsMusic()) $('audioNote').textContent = 'Music could not resume. Pause and resume the night, or tap Test music.';
+      }).finally(() => { musicRecovery = null; });
+    } catch (_) {
+      $('audioNote').textContent = 'Music could not resume. Pause and resume the night, or tap Test music.';
+    }
   }
   function restartMusic() {
     if (musicSource) { musicSource.stop(); musicSource.disconnect(); }
@@ -191,7 +232,7 @@
     if (!audio || !musicGain) return;
     const t = audio.currentTime;
     musicGain.gain.cancelScheduledValues(t);
-    const playing = $('sound').checked && ((isNight() && !paused) || performance.now() < previewUntil);
+    const playing = wantsMusic();
     if (playing) ensureMusic();
     musicGain.gain.setTargetAtTime(playing ? 0.4 * volumeRatio() : 0, t, 0.15);
   }
@@ -396,7 +437,7 @@
     actions(button(t('Begin the first night'), startNight));
   }
   function startNight() {
-    unlockAudio(); restartMusic(); night++; attack = null; protection = null;
+    unlockAudio().then(ambience); restartMusic(); night++; attack = null; protection = null;
     nightIntro(); chime();
   }
   function shortOpeningPause(done) {
@@ -414,6 +455,7 @@
       // rather than adding a long fixed pause after the Chinese narration.
       if (speechPending === 0 || now >= speechUntil || (idleSince !== null && now - idleSince >= 500)) {
         speechPending = 0;
+        recoverMusic();
         clearInterval(interval); interval = null; clock.remove(); begin();
       }
     }, 100);
@@ -559,7 +601,7 @@
   }
   function resumeNight() {
     if (!paused) return;
-    $('pauseDialog').close(); paused = false; unlockAudio();
+    $('pauseDialog').close(); paused = false; unlockAudio().then(ambience);
     if (resumeStage) resumeStage();
   }
   function reset() {
