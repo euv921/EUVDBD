@@ -109,13 +109,27 @@
     if (navigator.userActivation?.isActive) speak();
     else speechTimer = setTimeout(speak, 80);
   }
+  // Safari requires the first speech request to come directly from a tap.
+  // Prime it silently before the music-only lead-in moves narration to a timer.
+  let speechPrimer = null;
+  function unlockSpeechFromGesture() {
+    if (!$('voice').checked || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
+    const primer = new SpeechSynthesisUtterance('Ready');
+    primer.volume = 0;
+    primer.lang = gameLocales()[0] === 'zh-CN' ? 'zh-CN' : 'en-US';
+    speechPrimer = primer;
+    const finish = () => { if (speechPrimer === primer) speechPrimer = null; };
+    primer.onend = finish;
+    primer.onerror = finish;
+    try { speechSynthesis.speak(primer); } catch (_) { finish(); }
+  }
   function setVoicePreview(active) {
     voicePreviewActive = active;
     $('testVoice').textContent = active ? 'Stop voice ■' : 'Test voice ♪';
     $('testVoice').setAttribute('aria-pressed', String(active));
   }
   function stopSpeech() {
-    speechToken++; speechPending = 0; speechUntil = 0;
+    speechToken++; speechPending = 0; speechUntil = 0; speechPrimer = null;
     clearTimeout(voicePreviewTimer); voicePreviewTimer = null; setVoicePreview(false);
     clearTimeout(speechTimer);
     if ('speechSynthesis' in window) speechSynthesis.cancel();
@@ -406,6 +420,7 @@
   }
   function nightIntro() {
     startStage('night-intro', nightIntro);
+    unlockSpeechFromGesture();
     panel('☾', g('NIGHT {night}', {night}), g('Everyone, close your eyes.'), g('Listen to the host.'));
     // Let the music (including the witch cackle) play before host speech.
     later(() => {

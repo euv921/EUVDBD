@@ -195,3 +195,8 @@ pending speech start; resuming the opening begins a fresh two-second lead-in.
 
 Bubbling Cauldron and Midnight Coven are removed. Saved selections for either
 fall back to Ghosts in the Attic, just like other removed tracks.
+
+Starting or resuming the opening silently primes browser speech directly from
+the button tap, before the two-second music lead-in. Test voice is optional;
+the game does not require testing the voice before starting a night. The primer
+is canceled with other speech on pause/reset and is independent of night music.
