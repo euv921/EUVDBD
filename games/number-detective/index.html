@@ -4,29 +4,38 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f5ed">
-  <meta name="description" content="Crack a three-digit code using clues about correct digits and positions. A free browser puzzle for phones, tablets, and computers.">
+  <meta name="description" content="A code-breaking game for 1–5 players. Take turns guessing three digits; whoever solves the secret code wins.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=1">
-  <script src="./engine.js?v=1" defer></script>
-  <script src="./app.js?v=1" defer></script>
+  <link rel="stylesheet" href="./style.css?v=2">
+  <script src="./engine.js?v=2" defer></script>
+  <script src="./app.js?v=2" defer></script>
 </head>
 <body>
   <header class="topbar">
     <a href="../../" class="library">← Game library</a>
     <span class="edition">A LITTLE MYSTERY · PLAY ANYTIME</span>
-    <button id="newGame" class="quiet" type="button">New puzzle ↗</button>
+    <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
   </header>
   <main>
     <section class="intro" aria-labelledby="title">
       <div class="eyebrow"><span class="dot"></span> A GAME OF LOGIC & LITTLE DISCOVERIES</div>
       <h1 id="title">Number <span>Detective.</span></h1>
       <p class="tagline">Three digits. Every clue counts.</p>
-      <p class="rules">Find the secret code: <strong>3 different digits from 0–9.</strong><br>A zero can come first. Take as many guesses as you need.</p>
+      <p class="rules">Find the secret code: <strong>3 different digits from 0–9.</strong><br>A zero can come first. Play solo or take turns with 2–5 players.<br>Whoever cracks the code wins.</p>
     </section>
     <div class="game-grid">
       <section class="guess-card" aria-labelledby="guessTitle">
-        <div class="card-top"><span class="eyebrow" id="guessTitle">YOUR NEXT THEORY</span><span class="case-number" id="attemptLabel">GUESS 01</span></div>
-        <form id="guessForm" novalidate>
+        <form id="setupForm" class="player-setup">
+          <span class="eyebrow">CHOOSE YOUR DETECTIVES</span>
+          <h2>Solo or a friendly rivalry?</h2>
+          <label for="playerCount">Players <select id="playerCount"><option value="1">1 · Solo</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option><option value="5">5 players</option></select></label>
+          <div id="playerNames" class="player-names"></div>
+          <p id="setupHint">Share one device. One guess per turn. Everyone sees the clues.</p>
+          <button class="primary" type="submit">Start game <span aria-hidden="true">→</span></button>
+        </form>
+        <div id="playHeader" class="card-top" hidden><span class="eyebrow" id="guessTitle">YOUR NEXT THEORY</span><span class="case-number" id="attemptLabel">GUESS 01</span></div>
+        <div id="turnInfo" class="turn-info" hidden><strong id="currentPlayer"></strong><span id="roundLabel"></span></div>
+        <form id="guessForm" novalidate hidden>
           <label for="guess" class="sr-only">Your guess: three different digits</label>
           <input id="guess" type="text" inputmode="numeric" pattern="[0-9]{3}" maxlength="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="···" aria-describedby="inputHelp message">
           <p id="inputHelp" class="input-help">Type your code or use the keypad below.</p>
@@ -38,23 +47,24 @@
           </div>
           <button id="checkGuess" class="primary" type="submit">Check my guess <span aria-hidden="true">→</span></button>
         </form>
-        <p id="message" class="message" role="status" aria-live="polite">A fresh mystery. What’s your first guess?</p>
+        <p id="message" hidden class="message" role="status" aria-live="polite">A fresh mystery. What’s your first guess?</p>
         <div id="result" class="result" hidden>
           <span class="eyebrow" id="resultKicker">CASE CLOSED</span>
           <h2 id="resultTitle" tabindex="-1"></h2>
           <p id="resultDetail"></p>
           <button id="playAgain" type="button" class="primary">Play another puzzle ↗</button>
         </div>
-        <button id="reveal" type="button" class="text-button">Stuck? Reveal the code</button>
+        <button id="reveal" hidden type="button" class="text-button">Stuck? Reveal the code</button>
+        <button id="changePlayers" type="button" class="text-button" hidden>Change players</button>
       </section>
       <section class="notebook" aria-labelledby="historyTitle">
         <div class="notebook-heading"><h2 id="historyTitle">Your case notes</h2><span id="guessCount">0 guesses</span></div>
         <div class="legend"><span><i class="marker exact"></i><strong>Right spot</strong><small>Correct digit, correct position</small></span><span><i class="marker misplaced"></i><strong>Wrong spot</strong><small>Correct digit, different position</small></span></div>
         <div id="empty" class="empty"><div class="empty-code" aria-hidden="true">? ? ?</div><h3>Every guess leaves a clue.</h3><p>Your guesses and their hints will appear here.<br>Use them together to narrow down the code.</p></div>
         <div id="historyWrap" class="history-wrap" hidden>
-          <table><caption class="sr-only">Guess history, newest first</caption><thead><tr><th scope="col">TRY</th><th scope="col">CODE</th><th scope="col">RIGHT SPOT</th><th scope="col">WRONG SPOT</th></tr></thead><tbody id="history"></tbody></table>
+          <table><caption class="sr-only">Guess history, newest first</caption><thead><tr><th scope="col">TRY</th><th scope="col">PLAYER</th><th scope="col">CODE</th><th scope="col">RIGHT SPOT</th><th scope="col">WRONG SPOT</th></tr></thead><tbody id="history"></tbody></table>
         </div>
-        <details class="howto"><summary>How do the clues work? <span aria-hidden="true">+</span></summary><p>If the secret is <strong>123</strong> and you guess <strong>132</strong>, you get <strong>1 right spot</strong> (the 1) and <strong>2 wrong spots</strong> (the 2 and 3).</p><p>A digit is counted only once. The clues give counts, not which digits are correct. Get <strong>3 right spots</strong> to solve the puzzle.</p></details>
+        <details class="howto"><summary>How do the clues work? <span aria-hidden="true">+</span></summary><p>If the secret is <strong>123</strong> and you guess <strong>132</strong>, you get <strong>1 right spot</strong> (the 1) and <strong>2 wrong spots</strong> (the 2 and 3).</p><p>A digit is counted only once. The clues give counts, not which digits are correct. Get <strong>3 right spots</strong> to solve the puzzle. In multiplayer, take one valid guess per turn in player order; the player who solves it wins. Invalid or already-tried guesses do not use up a turn.</p></details>
       </section>
     </div>
     <footer class="page-footer"><span>INSPIRED BY BULLS & COWS</span><span>No timer. Just your next good idea.</span></footer>
