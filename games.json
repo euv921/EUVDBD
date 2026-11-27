@@ -12,5 +12,12 @@
     "description": "Close your eyes. A spoken host guides secret roles, Mafia attacks, Doctor saves, and morning reveals.",
     "emoji": "🌙",
     "url": "games/mafia/"
+  },
+  {
+    "slug": "number-detective",
+    "title": "Number Detective",
+    "description": "Crack a secret three-digit code. Use right-position and wrong-position clues to solve the puzzle.",
+    "emoji": "🔎",
+    "url": "games/number-detective/"
   }
 ]

@@ -1,0 +1,36 @@
+name: Number Detective tests
+on:
+  push:
+    branches: [main]
+    paths: ['games/number-detective/**', 'tests/number-detective/**', '.github/workflows/number-detective-tests.yml']
+  pull_request:
+    paths: ['games/number-detective/**', 'tests/number-detective/**', '.github/workflows/number-detective-tests.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/number-detective/engine.test.cjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r tests/mafia/requirements.txt
+      - run: python -m playwright install --with-deps ${{ matrix.engine }}
+      - run: python -m unittest discover -s tests/number-detective -v
+        env:
+          GAME_BROWSER: ${{ matrix.engine }}
