@@ -6,9 +6,9 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="A code-breaking game for 1–5 players. Take turns guessing three digits; whoever solves the secret code wins.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=2">
-  <script src="./engine.js?v=2" defer></script>
-  <script src="./app.js?v=2" defer></script>
+  <link rel="stylesheet" href="./style.css?v=3">
+  <script src="./engine.js?v=3" defer></script>
+  <script src="./app.js?v=3" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -47,6 +47,10 @@
           </div>
           <button id="checkGuess" class="primary" type="submit">Check my guess <span aria-hidden="true">→</span></button>
         </form>
+        <section id="latestFeedback" class="latest-feedback" aria-label="Latest guess result" hidden>
+          <div class="latest-heading"><span id="latestPlayer"></span><strong id="latestCode"></strong></div>
+          <div class="latest-scores"><div class="latest-right"><strong id="latestRight">0</strong><span>Right spot</span></div><div class="latest-wrong"><strong id="latestWrong">0</strong><span>Wrong spot</span></div></div>
+        </section>
         <p id="message" hidden class="message" role="status" aria-live="polite">A fresh mystery. What’s your first guess?</p>
         <div id="result" class="result" hidden>
           <span class="eyebrow" id="resultKicker">CASE CLOSED</span>

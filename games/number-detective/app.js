@@ -56,6 +56,14 @@
       }
       $('history').prepend(row);
     });
+    $('latestFeedback').hidden = !active || guesses.length === 0;
+    if (active && guesses.length) {
+      const latest = guesses.at(-1), score = scoreGuess(answer, latest);
+      $('latestPlayer').textContent = players.length === 1 ? 'Your latest guess' : `${players[(guesses.length - 1) % players.length]} guessed`;
+      $('latestCode').textContent = latest;
+      $('latestRight').textContent = score.exact;
+      $('latestWrong').textContent = score.misplaced;
+    }
     $('empty').hidden = guesses.length > 0; $('historyWrap').hidden = guesses.length === 0;
     $('guessCount').textContent = `${guesses.length} ${guesses.length === 1 ? 'guess' : 'guesses'}`;
     $('attemptLabel').textContent = finished() ? 'CASE CLOSED' : `GUESS ${String(guesses.length + 1).padStart(2, '0')}`;
@@ -107,7 +115,9 @@
     const score = scoreGuess(answer, guess);
     message(solved() ? `${player} cracked ${answer}!` : `${guess}: ${score.exact} right ${score.exact === 1 ? 'spot' : 'spots'}, ${score.misplaced} wrong ${score.misplaced === 1 ? 'spot' : 'spots'}. ${players.length === 1 ? 'What’s your next theory?' : `Next: ${players[turn()]}.`}`);
     $('guess').value = ''; $('historyWrap').scrollTop = 0;
+    $('guess').blur();
     if (solved()) $('resultTitle').focus();
+    (solved() ? $('result') : $('latestFeedback')).scrollIntoView({block: solved() ? 'center' : 'end', behavior: 'instant'});
   });
   document.querySelectorAll('[data-digit]').forEach(button => button.addEventListener('click', () => {
     if (players.length && !finished() && $('guess').value.length < 3) { $('guess').value += button.dataset.digit; message('Three different digits. Follow the clues.'); }
