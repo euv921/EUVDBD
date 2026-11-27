@@ -170,7 +170,7 @@ class NumberDetectiveTests(unittest.TestCase):
                     expected = 'Your turn' if count == 1 else f'{players[(index + 1) % count]}’s turn'
                     expect(p.locator('#currentPlayer')).to_have_text(expected)
                     expect(p.locator('#history tr')).to_have_count(index + 1)
-                if count > 1: expect(p.locator('#roundLabel')).to_have_text('ROUND 2')
+                if count > 1: expect(p.locator('#roundLabel')).to_have_text('4 PTS')
                 self.guess('123')
                 expect(p.locator('#resultTitle')).to_have_text('You cracked the code!' if count == 1 else 'Alice wins!')
 
@@ -227,5 +227,136 @@ class NumberDetectiveTests(unittest.TestCase):
         for width in [320, 390, 768, 1280]:
             p.set_viewport_size({'width': width, 'height': 900})
             self.assertTrue(p.evaluate('document.documentElement.scrollWidth <= innerWidth'))
+
+    def seed_points(self, count=2, guesses=None, balances=None):
+        players = ['Alice', 'Bob', 'Chris', 'Dana', 'Eli'][:count]
+        self.page.evaluate('(state) => localStorage.setItem("number-detective-v1", JSON.stringify(state))',
+                           {'answer': '123', 'guesses': guesses or [], 'players': players, 'revealed': False,
+                            'pointsVersion': 1, 'startingPoints': balances or [5] * count, 'scoringFrom': 0})
+        self.page.reload()
+
+    def balances(self):
+        return self.page.locator('#pointsList .points-balance').all_text_contents()
+
+    def wrong_codes(self, count):
+        return [str(n).zfill(3) for n in range(1000) if len(set(str(n).zfill(3))) == 3 and str(n).zfill(3) != '123'][:count]
+
+    def test_points_accumulate_across_wins_next_rounds_and_reload(self):
+        p = self.page
+        self.seed_points()
+        self.assertEqual(self.balances(), ['5 pts', '5 pts'])
+        self.guess('112')
+        self.assertEqual(self.balances(), ['5 pts', '5 pts'])
+        self.guess('456')
+        self.assertEqual(self.balances(), ['4 pts', '5 pts'])
+        self.guess('456')
+        self.assertEqual(self.balances(), ['4 pts', '5 pts'])
+        self.guess('123')
+        expect(p.locator('#resultTitle')).to_have_text('Bob wins!')
+        self.assertEqual(self.balances(), ['4 pts', '9 pts'])
+        p.reload()
+        self.assertEqual(self.balances(), ['4 pts', '9 pts'])
+        p.locator('#playAgain').click()
+        self.assertEqual(self.balances(), ['9 pts', '14 pts'])
+        p.reload()
+        self.assertEqual(self.balances(), ['9 pts', '14 pts'])
+        answer = p.evaluate("JSON.parse(localStorage.getItem('number-detective-v1')).answer")
+        self.guess(answer)
+        self.assertEqual(self.balances(), ['13 pts', '14 pts'])
+        p.locator('#playAgain').click()
+        self.assertEqual(self.balances(), ['18 pts', '19 pts'])
+
+    def test_zero_points_skip_and_actual_player_history(self):
+        p = self.page
+        self.seed_points(count=5, balances=[0, 2, 0, 1, 0])
+        expect(p.locator('#currentPlayer')).to_have_text('Bob’s turn')
+        expect(p.locator('#pointsList li[data-player="0"]')).to_contain_text('Out this round')
+        self.guess('456')
+        expect(p.locator('#currentPlayer')).to_have_text('Dana’s turn')
+        self.guess('789')
+        expect(p.locator('#currentPlayer')).to_have_text('Bob’s turn')
+        expect(p.locator('#history .history-player')).to_have_text(['Dana', 'Bob'])
+        p.reload()
+        expect(p.locator('#currentPlayer')).to_have_text('Bob’s turn')
+        self.guess('045')
+        expect(p.locator('#resultTitle')).to_have_text('Everyone is out of points.')
+        expect(p.locator('#guessForm')).to_be_hidden()
+        self.assertEqual(self.balances(), ['0 pts'] * 5)
+        p.locator('#playAgain').click()
+        self.assertEqual(self.balances(), ['5 pts'] * 5)
+
+    def test_last_point_win_and_all_players_exhausted(self):
+        p = self.page
+        self.seed_points(guesses=self.wrong_codes(9))
+        self.assertEqual(self.balances(), ['0 pts', '1 pts'])
+        self.guess('123')
+        expect(p.locator('#resultTitle')).to_have_text('Bob wins!')
+        self.assertEqual(self.balances(), ['0 pts', '5 pts'])
+        p.locator('#playAgain').click()
+        self.assertEqual(self.balances(), ['5 pts', '10 pts'])
+        for count in [2, 5]:
+            self.seed_points(count, self.wrong_codes(count * 5 - 1))
+            self.guess(self.wrong_codes(count * 5)[-1])
+            expect(p.locator('#resultTitle')).to_have_text('Everyone is out of points.')
+            expect(p.locator('#recordNotice')).to_be_hidden()
+            p.reload()
+            expect(p.locator('#resultTitle')).to_have_text('Everyone is out of points.')
+            p.locator('#playAgain').click()
+            self.assertEqual(self.balances(), ['5 pts'] * count)
+
+    def test_reveal_keeps_remaining_points_and_solo_has_no_costs(self):
+        p = self.page
+        self.seed_points(balances=[8, 13])
+        self.guess('456')
+        p.locator('#reveal').click(); p.locator('#confirmAction').click()
+        self.assertEqual(self.balances(), ['7 pts', '13 pts'])
+        p.locator('#playAgain').click()
+        self.assertEqual(self.balances(), ['12 pts', '18 pts'])
+        self.seed_points(1, self.wrong_codes(12))
+        expect(p.locator('#pointsBoard')).to_be_hidden()
+        expect(p.locator('#guessForm')).to_be_visible()
+        self.guess('123')
+        expect(p.locator('#resultTitle')).to_have_text('You cracked the code!')
+
+    def test_best_record_counts_everyones_guesses_and_only_improves(self):
+        p = self.page
+        self.seed_points(3, self.wrong_codes(4))
+        self.guess('123')
+        expect(p.locator('#bestRecordCount')).to_have_text('5 total guesses')
+        expect(p.locator('#bestRecordOwner')).to_have_text('Bob · 3 players')
+        expect(p.locator('#recordNotice')).to_contain_text('New best')
+        p.reload()
+        expect(p.locator('#bestRecordCount')).to_have_text('5 total guesses')
+        self.seed_points(1, self.wrong_codes(5))
+        self.guess('123')
+        expect(p.locator('#bestRecordCount')).to_have_text('5 total guesses')
+        self.seed_points(2, self.wrong_codes(4))
+        self.guess('123')
+        expect(p.locator('#recordNotice')).to_be_hidden()
+        expect(p.locator('#bestRecordOwner')).to_have_text('Bob · 3 players')
+        self.seed_points(1, self.wrong_codes(2))
+        self.guess('123')
+        expect(p.locator('#bestRecordCount')).to_have_text('3 total guesses')
+        expect(p.locator('#recordNotice')).to_be_visible()
+        self.seed_points(5, self.wrong_codes(1))
+        self.guess('123')
+        expect(p.locator('#bestRecordCount')).to_have_text('2 total guesses')
+        expect(p.locator('#bestRecordOwner')).to_have_text('Bob · 5 players')
+        p.reload()
+        expect(p.locator('#bestRecordCount')).to_have_text('2 total guesses')
+
+    def test_point_save_validation_and_legacy_clue_migration(self):
+        p = self.page
+        self.seed_points(2, self.wrong_codes(12))
+        # The invalid overdrawn log is rejected instead of producing negatives.
+        expect(p.locator('#setupForm')).to_be_visible()
+        self.seed_players(2, self.wrong_codes(12))
+        self.assertEqual(self.balances(), ['5 pts', '5 pts'])
+        expect(p.locator('#history tr')).to_have_count(12)
+        self.guess('123')
+        self.assertEqual(self.balances(), ['9 pts', '5 pts'])
+        p.locator('#changePlayers').click()
+        p.locator('#setupForm button[type=submit]').click()
+        self.assertEqual(self.balances(), ['5 pts', '5 pts'])
 
 if __name__ == '__main__': unittest.main()

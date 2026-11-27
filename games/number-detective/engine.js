@@ -25,7 +25,44 @@
     }
     return digits.slice(0, 3).join('');
   }
-  const api = Object.freeze({isValidCode, scoreGuess, createCode});
+  // Reconstruct turns and balances from the starting balances and guess log.
+  // This keeps reloads from charging twice or awarding a win twice.
+  function evaluateRound({answer, guesses, playerCount, startingPoints = Array(playerCount).fill(5), scoringFrom = 0}) {
+    if (!isValidCode(answer) || !Number.isInteger(playerCount) || playerCount < 1 || playerCount > 5
+      || !Array.isArray(guesses) || !guesses.every(isValidCode) || new Set(guesses).size !== guesses.length
+      || !Array.isArray(startingPoints) || startingPoints.length !== playerCount
+      || !startingPoints.every(points => Number.isSafeInteger(points) && points >= 0 && points <= Number.MAX_SAFE_INTEGER - 30)
+      || !Number.isInteger(scoringFrom) || scoringFrom < 0 || scoringFrom > guesses.length) throw new Error('Invalid round.');
+    const competitive = playerCount > 1, points = [...startingPoints], actors = [];
+    const next = start => {
+      if (!competitive) return 0;
+      for (let step = 0; step < playerCount; step++) {
+        const index = (start + step) % playerCount;
+        if (points[index] > 0) return index;
+      }
+      return null;
+    };
+    let current = scoringFrom > 0 ? 0 : next(0), winner = null;
+    for (let index = 0; index < guesses.length; index++) {
+      if (winner !== null || current === null) throw new Error('Guess after round ended.');
+      const legacyGuess = index < scoringFrom;
+      const actor = legacyGuess ? index % playerCount : current;
+      actors.push(actor);
+      if (competitive && !legacyGuess) points[actor]--;
+      if (guesses[index] === answer) {
+        winner = actor;
+        if (competitive) points[actor] += 5;
+        current = null;
+      } else current = index + 1 < scoringFrom ? (actor + 1) % playerCount : next((actor + 1) % playerCount);
+    }
+    return {points, actors, current, winner, exhausted: competitive && current === null && winner === null};
+  }
+  function nextRoundPoints(points) {
+    if (!Array.isArray(points) || points.length < 2 || points.length > 5
+      || !points.every(value => Number.isSafeInteger(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER - 30)) throw new Error('Invalid balances.');
+    return points.map(value => value + 5);
+  }
+  const api = Object.freeze({isValidCode, scoreGuess, createCode, evaluateRound, nextRoundPoints});
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else globalThis.NumberDetective = api;
 })();
