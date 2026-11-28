@@ -13,22 +13,19 @@
     answerInfo: () => null, lengths: [3], createCode: () => window.NumberDetective.createCode()} : window.LetterPuzzle.createEngine(config.entries);
   const {isValidCode, isAnswer, answerInfo, lengths, scoreGuess, createCode, evaluateRound, nextRoundPoints} = rules;
   const $ = id => document.getElementById(id);
-  const key = `${config.slug}-v1`, preferencesKey = 'number-detective-players';
+  const preferencesKey = 'number-detective-players';
   const names = Array(5).fill('');
   let savedLengths = {};
   let answer, guesses = [], players = [], revealed = false, pendingAction = null;
   let startingPoints = [], scoringFrom = 0;
   let gameLength = numeric ? 3 : 0;
-  let view = new URL(location.href).searchParams.get('screen') === 'game' ? 'game' : 'setup';
+  let view = 'setup';
   let bestRecord = null, recordBroken = false;
   const recordKey = `${config.slug}-best-v1`;
   const ledger = () => evaluateRound({answer, guesses, playerCount: players.length, startingPoints, scoringFrom});
   const solved = () => typeof answer === 'string' && guesses.at(-1) === answer;
   const finished = () => revealed || solved() || (players.length > 1 && ledger().exhausted);
   const turn = () => ledger().current;
-  function save() {
-    try { localStorage.setItem(key, JSON.stringify({answer, guesses, players, revealed, startingPoints, scoringFrom, pointsVersion: 1, selectedLength: gameLength})); } catch (_) {}
-  }
   function updateRecord() {
     if (!solved() || (bestRecord && guesses.length >= bestRecord.guesses)) return false;
     bestRecord = {guesses: guesses.length, name: players[ledger().winner], playerCount: players.length};
@@ -72,11 +69,8 @@
     $('backToDetectives').hidden = !inGame;
     document.body.classList.toggle('game-screen', inGame);
     $('screenStep').textContent = inGame ? 'STEP 3 · SOLVE THE MYSTERY' : 'STEP 2 · GAME SETUP';
-    $('savedGamePanel').hidden = !active;
-    $('savedGameInfo').textContent = active ? `Saved game: ${players.join(', ')}${numeric ? '' : ` · ${answer.length} letters`}. Your guesses and points are kept.` : '';
-    $('resumeGame').textContent = active && finished() ? 'View last result →' : 'Resume current game →';
     $('startCompetition').disabled = false;
-    $('startCompetition').textContent = active ? 'Start a new game →' : 'Start game →';
+    $('startCompetition').textContent = 'Start game →';
     $('wordLength').hidden = !active || finished() || numeric;
     if (active) {
       document.documentElement.style.setProperty('--letters', String(answer.length));
@@ -157,19 +151,24 @@
       : Array(players.length).fill(5);
     scoringFrom = 0; recordBroken = false;
     answer = createCode(gameLength); guesses = []; revealed = false;
-    $('guess').value = ''; save(); render();
+    $('guess').value = ''; render();
     message(players.length === 1 ? 'A fresh mystery. What’s your first guess?' : `${players[0]} goes first. One shared answer, one guess per turn.`);
   }
   function showView(next, push = true) {
     view = next === 'game' && players.length ? 'game' : 'setup';
+    if (view === 'setup') {
+      players = []; answer = undefined; guesses = []; revealed = false;
+      startingPoints = []; scoringFrom = 0; recordBroken = false;
+      $('guess').value = '';
+    }
     if (view === 'setup' && !numeric) $('puzzleLength').value = '0';
     const url = new URL(location.href); url.searchParams.set('screen', view);
     if (push) history.pushState(null, '', url.href);
+    else history.replaceState(null, '', url.href);
     render(); window.scrollTo({top: 0, behavior: 'instant'});
     if (view === 'setup') $('setupTitle').focus({preventScroll: true});
   }
   $('backToDetectives').addEventListener('click', () => showView('setup'));
-  $('resumeGame').addEventListener('click', () => showView('game'));
   window.addEventListener('popstate', () => showView(new URL(location.href).searchParams.get('screen'), false));
   function ask(title, detail, action, confirmLabel = 'New puzzle') {
     pendingAction = action; $('confirmTitle').textContent = title; $('confirmDetail').textContent = detail;
@@ -222,8 +221,7 @@
       startingPoints = []; scoringFrom = 0; recordBroken = false; gameLength = chosenLength;
       newGame(); showView('game');
     };
-    if (players.length) ask('Start a new game?', 'This replaces the saved game and starts a fresh competition at 5 points each. Best records are kept.', start, 'Start new game');
-    else start();
+    start();
   });
   $('guessForm').addEventListener('submit', event => {
     event.preventDefault(); if (!players.length || finished()) return;
@@ -232,7 +230,7 @@
     if (!isValidCode(guess)) { message(numeric ? 'Use three different digits—no repeats. Your turn continues.' : 'Use plain letters A–Z, without tone marks or numbers. Repeated letters are allowed. Your turn continues.', true); $('guess').focus(); return; }
     if (guesses.includes(guess)) { message('You already tried that guess. Try a new one; your turn continues.', true); $('guess').focus(); return; }
     const player = players[turn()];
-    guesses.push(guess); recordBroken = updateRecord(); save(); render();
+    guesses.push(guess); recordBroken = updateRecord(); render();
     const score = scoreGuess(answer, guess);
     message(solved() ? `${player} cracked ${answer}!` : ledger().exhausted ? `Everyone is out of points. The ${numeric ? 'code' : 'answer'} was ${answer}.` : `${guess}: ${score.exact} right ${score.exact === 1 ? 'spot' : 'spots'}, ${score.misplaced} wrong ${score.misplaced === 1 ? 'spot' : 'spots'}. ${players.length === 1 ? 'What’s your next theory?' : `Next: ${players[turn()]} (${ledger().points[turn()]} points).`}`);
     $('guess').value = ''; $('historyWrap').scrollTop = 0;
@@ -252,7 +250,7 @@
   });
   $('playAgain').addEventListener('click', newGame);
   $('reveal').addEventListener('click', () => ask('Reveal the answer?', 'This ends the current puzzle. No player wins if the answer is revealed.', () => {
-    revealed = true; save(); render(); message('Mystery revealed. A new puzzle is waiting.'); $('resultTitle').focus();
+    revealed = true; render(); message('Mystery revealed. A new puzzle is waiting.'); $('resultTitle').focus();
   }, 'Reveal answer'));
   $('cancelAction').addEventListener('click', () => { pendingAction = null; $('confirmDialog').close(); });
   $('confirmDialog').addEventListener('cancel', () => { pendingAction = null; });
@@ -275,27 +273,14 @@
       && Number.isInteger(record.playerCount) && record.playerCount >= 1 && record.playerCount <= 5
       && typeof record.name === 'string' && record.name.length > 0 && record.name.length <= 40) bestRecord = record;
   } catch (_) {}
-  let restored = false;
-  try {
-    const state = JSON.parse(localStorage.getItem(key) || 'null');
-    const savedPlayers = state?.players ?? ['Player 1'];
-    if (state && isAnswer(state.answer) && Array.isArray(state.guesses) && state.guesses.every(isValidCode)
-      && new Set(state.guesses).size === state.guesses.length && typeof state.revealed === 'boolean'
-      && !state.guesses.slice(0, -1).includes(state.answer) && Array.isArray(savedPlayers) && savedPlayers.length >= 1 && savedPlayers.length <= 5
-      && savedPlayers.every(name => typeof name === 'string' && name.trim().length > 0 && name.length <= 40)) {
-      const balances = state.pointsVersion === 1 ? state.startingPoints : Array(savedPlayers.length).fill(5);
-      // Older saves keep all their clues; charging starts with their next guess.
-      const from = state.pointsVersion === 1 ? state.scoringFrom : state.guesses.length;
-      evaluateRound({answer: state.answer, guesses: state.guesses, playerCount: savedPlayers.length, startingPoints: balances, scoringFrom: from});
-      answer = state.answer; guesses = state.guesses; revealed = state.revealed; players = savedPlayers;
-      startingPoints = balances; scoringFrom = from; restored = true;
-      gameLength = state.selectedLength === 0 || lengths.includes(state.selectedLength) ? state.selectedLength : answer.length;
-      $('playerCount').value = String(players.length);
-      players.forEach((name, i) => { if (!names[i]) names[i] = name.slice(0, 20); });
-    }
-  } catch (_) {}
-  if (!restored) view = 'setup';
-  if (restored) recordBroken = updateRecord();
+  // Old round snapshots are intentionally no longer used. Preferences and
+  // best records remain separate and are kept.
+  for (const roundKey of ['number-detective-v1', 'pinyin-detective-v1', 'word-detective-v1']) {
+    try { localStorage.removeItem(roundKey); } catch (_) {}
+  }
+  if (new URL(location.href).searchParams.get('screen') === 'game') {
+    const url = new URL(location.href); url.searchParams.set('screen', 'setup');
+    history.replaceState(null, '', url.href);
+  }
   renderNames(); render();
-  if (restored) { save(); message(finished() ? 'Your last case is saved. Play another whenever you’re ready.' : `Welcome back. ${players.length === 1 ? 'Your turn.' : `${players[turn()]}’s turn.`} Your clues are saved.`); }
 })();

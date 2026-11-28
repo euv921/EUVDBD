@@ -81,3 +81,11 @@ Dot Battle is the supplied v31 file, preserved byte for byte: 15 rounds,
 maximum choices 10/20/50/100, default maximum 20, default Solid Color.
 Its continuous speech recognition and diagnostics have not been changed.
 Real iPad Safari microphone and recognition behavior still needs a device check.
+
+## Number & Word Detective
+
+Choose Numbers, Chinese pinyin, or English words, then set up 1–5 players.
+Player names and best solve records are remembered locally in this browser.
+Rounds are not saved: refreshing, reopening the game, or returning to setup
+starts fresh. During a session, Play again carries multiplayer points forward
+and adds 5 points to everyone for the next round.

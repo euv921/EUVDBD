@@ -7,12 +7,12 @@ Numbers, Chinese pinyin, and English words. Each opens a separate Set up your ga
 `play.html?variant=...`. Start game then opens the game screen
 (`screen=game`). The game has a prominent, sticky Back to setup button;
 the setup screen has a Variant menu link to return to the first screen.
-Switching variants keeps each puzzle and its points saved independently.
+Returning to setup or switching variants ends the current competition.
 
 ## Variants
 
 - **Numbers:** the original three distinct digits, including leading zero.
-  The existing numeric rules module and saved games are preserved.
+  The existing numeric rules module is preserved.
 - **Chinese pinyin:** one tone-free syllable, such as `mian`. Choose 2–6 letters
   or Any length; Any length is the default for new games. Answers are a curated bank of standard
   syllables without tone marks/numbers. Syllables requiring explicit ü/v are
@@ -48,27 +48,20 @@ next round begins at Alice 9 / Bob 14. A reveal ends without a win bonus.
 Starting a new game from the setup screen starts a new competition. Solo has no point limit or cost.
 Invalid/already-tried guesses neither advance the turn nor cost points.
 
-## Saved progress and records
+## Preferences and records
 
-Progress and best records are separate per variant:
+Rounds are kept only in memory. Reloading, reopening, or returning to setup
+clears the current puzzle and points. There is no resume option. Play again
+keeps accumulated points during the current session. Old saved round snapshots
+are removed without affecting preferences or best records.
 
-| Variant | Round key | Best-record key |
-| --- | --- | --- |
-| Numbers | number-detective-v1 | number-detective-best-v1 |
-| Pinyin | pinyin-detective-v1 | pinyin-detective-best-v1 |
-| English | word-detective-v1 | word-detective-best-v1 |
-
-Records compare the fewest total accepted guesses across all players, shared
-across solo/multiplayer and supported lengths within that variant. Only a
-strict improvement replaces the record. Reveals and exhausted rounds do not.
-The record shows the winner and player count. Names/count and per-variant
-length choices share `number-detective-players`. The chooser always opens first;
-any older last-mode preference is ignored. Existing numeric keys remain unchanged.
-
-Points and turn ownership are reconstructed from starting balances and the
-history, so reload does not re-charge a guess or double-pay a bonus. Older
-numeric saves keep their clues; points start with their next guess, tracked
-by the persisted scoringFrom offset. Blocked storage falls back to memory.
+Best records persist locally per variant using `number-detective-best-v1`,
+`pinyin-detective-best-v1`, and `word-detective-best-v1`. Records compare the
+fewest total accepted guesses across all players, shared across solo/multiplayer
+and supported lengths within that variant. Only a strict improvement replaces
+the record. Reveals and exhausted rounds do not. The record shows the winner
+and player count. Names/count use `number-detective-players`; new letter games
+default to Any length. Blocked storage falls back to memory.
 The answer is local to the browser: this is a casual puzzle, not anti-cheat.
 
 No audio, microphone, accounts, external assets, or server is required. All
@@ -87,7 +80,7 @@ python -m unittest discover -s tests/letter-detective -v
 GitHub Actions runs both suites in Chromium and WebKit. The numeric suite
 covers every valid three-digit answer/guess pair; the letter suite checks
 multiset scoring exhaustively over a small alphabet, both banks and length
-filters, points, mode switching, saved progress, and responsive layouts.
+filters, points, mode switching, removal of saved rounds, retained preferences/records, and responsive layouts.
 
 ## Three-screen navigation
 
@@ -95,12 +88,7 @@ The variant chooser, game setup, and gameplay are distinct views. The
 setup screen never displays the board/history. The game never displays the
 player-count/name form or the old Change players link. Back to setup is
 a prominent button in the sticky game header, so it remains available after
-scrolling down to results. It returns immediately without discarding progress.
-
-A saved game can be resumed from setup without resetting points or charging a
-new-round bonus. Starting a new competition asks before replacing that saved
-game, and begins with 5 points each. Browser Back/Forward also moves between
-setup and game without altering balances. New letter competitions default to
-Any length even if an older preference used a fixed count. A saved game's
-length choice is snapshotted separately from setup controls, so resuming and
-replaying retains the original fixed or Any-length setting.
+scrolling down to results. It returns immediately and discards the current
+competition. Starting again from setup begins with 5 points each. Browser
+Back/Forward cannot resume a discarded round. New letter competitions default
+to Any length; Play again retains the current session's chosen length.

@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=12">
-  <script src="./engine.js?v=12" defer></script>
-  <script src="./pinyin.js?v=12" defer></script>
-  <script src="./words.js?v=12" defer></script>
-  <script src="./letters-engine.js?v=12" defer></script>
-  <script src="./app.js?v=12" defer></script>
+  <link rel="stylesheet" href="./style.css?v=14">
+  <script src="./engine.js?v=14" defer></script>
+  <script src="./pinyin.js?v=14" defer></script>
+  <script src="./words.js?v=14" defer></script>
+  <script src="./letters-engine.js?v=14" defer></script>
+  <script src="./app.js?v=14" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a id="toVariants" href="./?v=13" class="menu-back">← Variant menu</a>
+    <a id="toVariants" href="./?v=14" class="menu-back">← Variant menu</a>
     <button id="backToDetectives" class="back-to-detectives" type="button" hidden>← Back to setup</button>
     <span id="screenStep" class="edition">STEP 2 · GAME SETUP</span>
     <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
@@ -31,7 +31,6 @@
         <form id="setupForm" class="player-setup">
           <span class="eyebrow">STEP 2 · SETUP</span>
           <h2 id="setupTitle" tabindex="-1">Set up your game</h2>
-        <div id="savedGamePanel" class="saved-game" hidden><p id="savedGameInfo"></p><button id="resumeGame" class="resume-game" type="button">Resume current game →</button></div>
           <label for="playerCount">Players <select id="playerCount"><option value="1">1 · Solo</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option><option value="5">5 players</option></select></label>
           <label id="lengthChoice" for="puzzleLength" class="length-choice">Letters per puzzle<select id="puzzleLength"></select></label>
           <div id="playerNames" class="player-names"></div>
