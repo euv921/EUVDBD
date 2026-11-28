@@ -1,69 +1,85 @@
-# Number Detective
+# Number & Word Detective
 
-A self-contained three-digit Bulls and Cows game for 1–5 players. Open `index.html` through a
-static server, or play at https://euv921.github.io/EUVDBD/games/number-detective/.
+One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
+The **Puzzle variant** menu selects Numbers, Chinese pinyin, or English words.
+Switching variants keeps each puzzle and its points saved independently.
 
-The code contains three distinct digits from 0–9; leading zero is allowed.
-Every guess reports digits in the correct position and correct digits in the
-wrong position. Each digit contributes to exactly one count. Three right spots
-wins. There is no timer; solo has no guess limit. Multiplayer turns are limited
-by each player’s points. Duplicate guesses do not use a turn or cost points.
+## Variants
 
-Choose 1 player for solo, or 2–5 players sharing one device. Names are optional.
-Everyone guesses the same code and sees all previous clues. One valid new
-guess advances the turn in seating order; the person who guesses the full code
-wins immediately. Invalid/repeated guesses keep the same turn. Rounds wrap back
-to the first player. A reveal ends the game without a winner. Replay keeps the
-same players; Change players returns to setup after confirmation if a puzzle
-is underway. Player names and count are remembered; hidden seats retain names.
+- **Numbers:** the original three distinct digits, including leading zero.
+  The existing numeric rules module and saved games are preserved.
+- **Chinese pinyin:** one tone-free syllable, such as `mian`. Choose 2–6 letters
+  or Any length; the default is 4. Answers are a curated bank of standard
+  syllables without tone marks/numbers. Syllables requiring explicit ü/v are
+  omitted. At round end, show one matching Chinese character and meaning;
+  this is an example homophone, not every possible meaning.
+- **English words:** curated common words of 3–8 letters, including `dinosaur`.
+  Choose a length or Any length; the default is 8. No answer exceeds 8 letters.
 
-The touch keypad and physical keyboard both work. A confirmed reveal ends the
-round. New puzzle and Play another puzzle generate a fresh independent code.
+The letter count is shown before guessing. Letter guesses accept uppercase,
+normalize to lowercase, allow repeated letters, and must match the exact length.
+They can be any A–Z string, not necessarily a dictionary word. Each occurrence
+is counted once: exact positions first, then matching remaining letters.
+For example, `mian` / `main` gives 2 right and 2 misplaced; `dinosaur` /
+`diansour` gives 5 right and 3 misplaced. Digits still may not repeat.
 
-The code is drawn with a cryptographic Fisher–Yates shuffle and rejection
-sampling, giving each of the 720 possible codes the same probability. Codes
-can repeat between independent games. No role rotation or seeded names are used.
+The numeric code uses a cryptographic Fisher–Yates shuffle with rejection
+sampling. Letter answers are drawn uniformly from the selected bank/length,
+using crypto.getRandomValues with rejection sampling. Banks are bundled in
+`pinyin.js` and `words.js`; there is no external dictionary or runtime service.
 
-Progress is saved locally under `number-detective-v1`, including the current
-answer, guesses, player order, and starting point balances. Current points,
-eligible turns, and the winner are reconstructed from the history, so refreshing
-does not charge guesses or pay bonuses twice. Older single-player saves continue as solo games. Player
-setup preferences are stored separately as `number-detective-players`. If storage is blocked, the current game remains playable.
-No accounts, microphone, sound, external assets, or network services are used.
-The answer lives in the browser; this is a casual puzzle, not an anti-cheat system.
+## Players and points
 
-All game code and styling are original. `game.json` enables the existing library
-catalog generator to discover it. Other games and their audio are unchanged.
+Choose solo or 2–5 players sharing one device. Names are optional. Each valid
+new guess advances to the next eligible player, and everyone sees all clues.
+In multiplayer a new competition starts at 5 points each. Every accepted guess
+costs 1, including a winning guess. Solving earns +5 immediately. Zero-point
+players sit out for the rest of the round. A solve made using the last point
+still wins and earns its reward. If everyone runs out, nobody wins.
 
-Run rules tests with `node --test tests/number-detective/engine.test.cjs` from the
-repository root. Browser tests use the existing Playwright Python dependency:
-`python -m unittest discover -s tests/number-detective -v`.
+Starting the next round adds +5 to every remaining balance. Scores accumulate,
+not reset: Alice makes a wrong guess (5 → 4), Bob solves (5 → 4 → 9), then the
+next round begins at Alice 9 / Bob 14. A reveal ends without a win bonus.
+Changing players starts a new competition. Solo has no point limit or cost.
+Invalid/already-tried guesses neither advance the turn nor cost points.
 
-## Competitive points (2–5 players)
+## Saved progress and records
 
-A new competition starts everyone at 5. Each accepted guess costs 1, even if
-correct. Solving earns +5 immediately. Players at 0 are skipped for the rest
-of the round. A correct guess made with the last point still wins and earns
-its +5 reward. If everyone runs out, the round ends without a winner.
+Progress and best records are separate per variant:
 
-At the start of the next round, add +5 to every existing balance. Scores
-accumulate; they are not reset. Example: Alice guesses wrong (5 → 4), Bob
-solves (5 → 4 → 9); the next round starts Alice at 9 and Bob at 14. A reveal
-ends a round without a win bonus; the next-round +5 still applies. Changing
-players starts a new competition with 5 each. Solo has no charges or rewards.
+| Variant | Round key | Best-record key |
+| --- | --- | --- |
+| Numbers | number-detective-v1 | number-detective-best-v1 |
+| Pinyin | pinyin-detective-v1 | pinyin-detective-best-v1 |
+| English | word-detective-v1 | word-detective-best-v1 |
 
-Pre-points saved puzzles retain all their clues. Charging begins with their
-next guess, with 5 starting points each; earlier guesses are not charged
-retroactively. The saved `scoringFrom` offset makes this migration stable.
+Records compare the fewest total accepted guesses across all players, shared
+across solo/multiplayer and supported lengths within that variant. Only a
+strict improvement replaces the record. Reveals and exhausted rounds do not.
+The record shows the winner and player count. Names/count and per-variant
+length choices share `number-detective-players`; the last mode is remembered
+as `number-detective-variant`. Existing numeric keys remain unchanged.
 
-## Best solve
+Points and turn ownership are reconstructed from starting balances and the
+history, so reload does not re-charge a guess or double-pay a bonus. Older
+numeric saves keep their clues; points start with their next guess, tracked
+by the persisted scoringFrom offset. Blocked storage falls back to memory.
+The answer is local to the browser: this is a casual puzzle, not anti-cheat.
 
-One record is shared across solo and multiplayer on the current browser/device:
-the fewest total accepted guesses in a completed solve, including every
-player’s guesses. Only a strictly lower total replaces the record; ties,
-reveals, and exhausted rounds do not. The winning player and player count are
-shown with the record. New rounds and changes of players keep it.
+No audio, microphone, accounts, external assets, or server is required. All
+code and banks are original. The existing library generator lists this as
+one game; no extra pinyin or English game folders/cards are added.
 
-The record uses localStorage key `number-detective-best-v1`. Current saved
-completed puzzles may establish the initial record. With storage blocked,
-points and best solve remain available in memory for the current visit.
+## Tests
+
+```sh
+node tests/number-detective/engine.test.cjs
+node tests/letter-detective/engine.test.cjs
+python -m unittest discover -s tests/number-detective -v
+python -m unittest discover -s tests/letter-detective -v
+```
+
+GitHub Actions runs both suites in Chromium and WebKit. The numeric suite
+covers every valid three-digit answer/guess pair; the letter suite checks
+multiset scoring exhaustively over a small alphabet, both banks and length
+filters, points, mode switching, saved progress, and responsive layouts.
