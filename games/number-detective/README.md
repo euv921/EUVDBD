@@ -1,7 +1,8 @@
 # Number & Word Detective
 
 One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
-The first screen has a Number & Word Detective title above three buttons:
+The first screen has an All games link back to the EUVDBD library and a
+Number & Word Detective title above three variant buttons:
 Numbers, Chinese pinyin, and English words. Each opens a separate Set up your game screen at
 `play.html?variant=...`. Start game then opens the game screen
 (`screen=game`). The game has a prominent, sticky Back to setup button;

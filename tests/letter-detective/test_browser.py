@@ -224,7 +224,8 @@ class LetterDetectiveTests(unittest.TestCase):
         expect(p.locator('h1')).to_contain_text('Detective.')
         self.assertEqual(p.locator('form').inner_text().splitlines(), ['Numbers','Chinese pinyin','English words'])
         expect(p.locator('button')).to_have_count(3)
-        expect(p.locator('select, input:not([type=hidden]), a')).to_have_count(0)
+        expect(p.locator('select, input:not([type=hidden])')).to_have_count(0)
+        expect(p.get_by_role('link',name='← All games',exact=True)).to_be_visible()
         for width,height in [(320,740),(390,844),(768,1024),(1280,900)]:
             p.set_viewport_size({'width':width,'height':height})
             for button in p.locator('button').all():
@@ -250,6 +251,9 @@ class LetterDetectiveTests(unittest.TestCase):
             expect(p.locator('#gameScreen')).to_be_hidden()
             p.locator('.menu-back').click()
             expect(p.locator('button')).to_have_count(3)
+        p.get_by_role('link',name='← All games',exact=True).click()
+        expect(p.get_by_role('heading',name='🎪 EUVDBD Game Library',exact=True)).to_be_visible()
+        expect(p.locator('a[href$="games/number-detective/"]')).to_be_visible()
 
     def test_sticky_back_resume_browser_history_and_any_length_defaults(self):
         p=self.page
