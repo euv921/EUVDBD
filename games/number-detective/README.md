@@ -1,7 +1,9 @@
 # Number & Word Detective
 
 One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
-The **Puzzle variant** menu has three buttons: Numbers, Chinese pinyin, and English words.
+The first screen contains only three buttons: Numbers, Chinese pinyin, and
+English words. Each opens its own game screen at `play.html?variant=...`.
+The game header’s Variant menu link returns to that clean first screen.
 Switching variants keeps each puzzle and its points saved independently.
 
 ## Variants
@@ -57,8 +59,8 @@ Records compare the fewest total accepted guesses across all players, shared
 across solo/multiplayer and supported lengths within that variant. Only a
 strict improvement replaces the record. Reveals and exhausted rounds do not.
 The record shows the winner and player count. Names/count and per-variant
-length choices share `number-detective-players`; the last mode is remembered
-as `number-detective-variant`. Existing numeric keys remain unchanged.
+length choices share `number-detective-players`. The chooser always opens first;
+any older last-mode preference is ignored. Existing numeric keys remain unchanged.
 
 Points and turn ownership are reconstructed from starting balances and the
 history, so reload does not re-charge a guess or double-pay a bonus. Older

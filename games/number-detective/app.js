@@ -5,9 +5,8 @@
     pinyin: window.PinyinDetectiveConfig,
     english: window.WordDetectiveConfig
   };
-  let selected = new URL(location.href).searchParams.get('variant');
-  if (!selected) { try { selected = localStorage.getItem('number-detective-variant'); } catch (_) {} }
-  if (!Object.hasOwn(modes, selected)) selected = 'number';
+  const selected = new URL(location.href).searchParams.get('variant');
+  if (!Object.hasOwn(modes, selected)) { location.replace('./'); return; }
   const config = modes[selected];
   const numeric = config.type === 'number';
   const rules = numeric ? {...window.NumberDetective, isAnswer: window.NumberDetective.isValidCode,
@@ -158,7 +157,6 @@
   document.title = config.title + ' · ' + config.tagline;
   $('variantWord').textContent = config.first;
   $('tagline').textContent = config.tagline;
-  document.querySelectorAll('[data-variant]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.variant === selected)));
   const legend = document.querySelectorAll('.legend small');
   legend[0].textContent = `Correct ${numeric ? 'digit' : 'letter'}, correct position`;
   legend[1].textContent = `Correct ${numeric ? 'digit' : 'letter'}, different position`;
@@ -189,14 +187,6 @@
   const backKey = node('button', '⌫', 'edit-key'); backKey.id = 'backspace'; backKey.type = 'button'; backKey.setAttribute('aria-label', 'Delete last character');
   if (numeric) keyboard.insertBefore(clearKey, keyboard.lastElementChild); else keyboard.append(clearKey);
   keyboard.append(backKey);
-  document.querySelectorAll('[data-variant]').forEach(button => button.addEventListener('click', () => {
-    const nextVariant = button.dataset.variant;
-    if (nextVariant === selected) return;
-    rememberNames(); if (players.length) save();
-    try { localStorage.setItem('number-detective-variant', nextVariant); } catch (_) {}
-    const url = new URL(location.href); url.searchParams.set('variant', nextVariant);
-    location.assign(url.href);
-  }));
   $('playerCount').addEventListener('change', () => { rememberNames(); renderNames(); });
   $('playerNames').addEventListener('input', rememberNames);
   $('setupForm').addEventListener('submit', event => {

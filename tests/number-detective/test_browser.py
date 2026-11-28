@@ -36,7 +36,7 @@ class NumberDetectiveTests(unittest.TestCase):
         self.errors = []
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.add_init_script("if (!localStorage.getItem('number-detective-no-seed') && !localStorage.getItem('number-detective-v1')) localStorage.setItem('number-detective-v1', JSON.stringify({answer:'123', guesses:[], revealed:false}))")
-        self.page.goto(self.url)
+        self.page.goto(self.url + "play.html?variant=number")
 
     def tearDown(self):
         try: self.assertEqual(self.errors, [])

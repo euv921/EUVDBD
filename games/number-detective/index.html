@@ -4,79 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f7f5ed">
-  <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
-  <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=7">
-  <script src="./engine.js?v=7" defer></script>
-  <script src="./pinyin.js?v=7" defer></script>
-  <script src="./words.js?v=7" defer></script>
-  <script src="./letters-engine.js?v=7" defer></script>
-  <script src="./app.js?v=7" defer></script>
+  <meta name="description" content="Choose Numbers, Chinese pinyin, or English words to open a Detective puzzle.">
+  <title>Detective · Choose your game</title>
+  <link rel="stylesheet" href="./menu.css?v=8">
 </head>
 <body>
-  <header class="topbar">
-    <a href="../../" class="library">← Game library</a>
-    <span class="edition">A LITTLE MYSTERY · PLAY ANYTIME</span>
-    <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
-  </header>
   <main>
-    <section class="intro" aria-labelledby="title">
-      <div class="eyebrow"><span class="dot"></span> A GAME OF LOGIC & LITTLE DISCOVERIES</div>
-      <h1 id="title"><span id="variantWord" class="variant-word">Number</span> <span>Detective.</span></h1>
-      <p id="tagline" class="tagline">Three digits. Every clue counts.</p>
-    </section>
-    <div class="game-grid">
-      <section class="guess-card" aria-labelledby="guessTitle">
-        <div class="variant-menu"><span class="eyebrow">PUZZLE VARIANT</span><div class="variant-buttons" role="group" aria-label="Puzzle variant"><button type="button" data-variant="number" aria-pressed="false"><strong aria-hidden="true">123</strong><span>Numbers</span></button><button type="button" data-variant="pinyin" aria-pressed="false"><strong aria-hidden="true">拼</strong><span>Chinese pinyin</span></button><button type="button" data-variant="english" aria-pressed="false"><strong aria-hidden="true">ABC</strong><span>English words</span></button></div></div>
-        <form id="setupForm" class="player-setup">
-          <span class="eyebrow">CHOOSE YOUR DETECTIVES</span>
-          <h2>Solo or a friendly rivalry?</h2>
-          <label for="playerCount">Players <select id="playerCount"><option value="1">1 · Solo</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option><option value="5">5 players</option></select></label>
-          <label id="lengthChoice" for="puzzleLength" class="length-choice">Letters per puzzle<select id="puzzleLength"></select></label>
-          <div id="playerNames" class="player-names"></div>
-          <p id="setupHint">Start with 5 points each. A guess costs 1; solving earns +5. Balances carry over between rounds.</p>
-          <button class="primary" type="submit">Start game <span aria-hidden="true">→</span></button>
-        </form>
-        <div id="playHeader" class="card-top" hidden><span class="eyebrow" id="guessTitle">YOUR NEXT THEORY</span><span class="case-number" id="attemptLabel">GUESS 01</span></div>
-        <div id="turnInfo" class="turn-info" hidden><strong id="currentPlayer"></strong><span id="roundLabel"></span></div>
-        <section id="pointsBoard" class="points-board" aria-label="Player points" hidden><span class="eyebrow">POINTS · CARRY OVER EACH ROUND</span><ul id="pointsList"></ul></section>
-        <div id="wordLength" class="word-length" hidden></div>
-        <form id="guessForm" novalidate hidden>
-          <label for="guess" class="sr-only">Your guess: three different digits</label>
-          <input id="guess" type="text" inputmode="numeric" pattern="[0-9]{3}" maxlength="3" autocomplete="off" autocapitalize="off" spellcheck="false" autocorrect="off" placeholder="···" aria-describedby="inputHelp message">
-          <p id="inputHelp" class="input-help">Type your code or use the keypad below.</p>
-          <div id="keyboard" class="keypad" aria-label="Guess keypad"></div>
-          <button id="checkGuess" class="primary" type="submit">Check my guess <span aria-hidden="true">→</span></button>
-        </form>
-        <section id="latestFeedback" class="latest-feedback" aria-label="Latest guess result" hidden>
-          <div class="latest-heading"><span id="latestPlayer"></span><strong id="latestCode"></strong></div>
-          <div class="latest-scores"><div class="latest-right"><strong id="latestRight">0</strong><span>Right spot</span></div><div class="latest-wrong"><strong id="latestWrong">0</strong><span>Wrong spot</span></div></div>
-        </section>
-        <p id="message" hidden class="message" role="status" aria-live="polite">A fresh mystery. What’s your first guess?</p>
-        <div id="result" class="result" hidden>
-          <span class="eyebrow" id="resultKicker">CASE CLOSED</span>
-          <h2 id="resultTitle" tabindex="-1"></h2>
-          <p id="recordNotice" class="record-notice" hidden></p>
-          <p id="answerMeaning" class="answer-meaning" hidden></p>
-          <p id="resultDetail"></p>
-          <button id="playAgain" type="button" class="primary">Play another puzzle ↗</button>
-        </div>
-        <button id="reveal" hidden type="button" class="text-button">Stuck? Reveal the code</button>
-        <button id="changePlayers" type="button" class="text-button" hidden>Change players</button>
-      </section>
-      <section class="notebook" aria-labelledby="historyTitle">
-        <div class="notebook-heading"><h2 id="historyTitle">Your case notes</h2><span id="guessCount">0 guesses</span></div>
-        <div class="best-record" aria-label="Best solve on this device"><span class="eyebrow">BEST SOLVE</span><strong id="bestRecordCount">No record yet</strong><small id="bestRecordOwner">Solve a code to set the first record.</small></div>
-        <div class="legend"><span><i class="marker exact"></i><strong>Right spot</strong><small>Correct digit, correct position</small></span><span><i class="marker misplaced"></i><strong>Wrong spot</strong><small>Correct digit, different position</small></span></div>
-        <div id="empty" class="empty"><div class="empty-code" aria-hidden="true">? ? ?</div><h3>Every guess leaves a clue.</h3><p>Your guesses and their hints will appear here.<br>Use them together to narrow down the code.</p></div>
-        <div id="historyWrap" class="history-wrap" hidden>
-          <table><caption class="sr-only">Guess history, newest first</caption><thead><tr><th scope="col">TRY</th><th scope="col">PLAYER</th><th scope="col">CODE</th><th scope="col">RIGHT SPOT</th><th scope="col">WRONG SPOT</th></tr></thead><tbody id="history"></tbody></table>
-        </div>
-        <details class="howto"><summary>How to play <span aria-hidden="true">+</span></summary><p id="variantRules" class="rules"></p><p id="variantExample"></p><p id="variantInputRules"></p><p>Multiplayer starts with 5 points each. Each accepted guess costs 1, including a winning guess. Solving earns +5 immediately. Players at 0 sit out for the round; if everyone runs out, nobody wins. Starting the next round adds +5 to everyone’s remaining balance. Invalid or already-tried guesses do not cost points. Changing players starts a fresh competition. Solo has no point limit.</p><p>The best record is the fewest total guesses across all players in a completed game. Each variant has its own record on this device, shared across solo, multiplayer, and supported lengths. Only a lower total replaces it. A reveal is not a solve. Switching variants keeps their puzzles and points separate.</p></details>
-      </section>
-    </div>
-    <footer class="page-footer"><span>INSPIRED BY BULLS & COWS</span><span>No timer. Just your next good idea.</span></footer>
+    <form action="./play.html" method="get" aria-label="Choose a puzzle variant">
+      <button type="submit" name="variant" value="number">Numbers</button>
+      <button type="submit" name="variant" value="pinyin">Chinese pinyin</button>
+      <button type="submit" name="variant" value="english">English words</button>
+    </form>
   </main>
-  <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmDetail"><h2 id="confirmTitle"></h2><p id="confirmDetail"></p><div class="dialog-actions"><button id="cancelAction" type="button" class="quiet">Keep playing</button><button id="confirmAction" type="button" class="primary">Continue</button></div></dialog>
 </body>
 </html>

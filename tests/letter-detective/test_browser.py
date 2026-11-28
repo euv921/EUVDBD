@@ -44,14 +44,14 @@ class LetterDetectiveTests(unittest.TestCase):
         finally: self.context.close()
 
     def open_variant(self, variant, slug, answer, count=2, guesses=None, balances=None, seed=True):
-        self.page.goto(self.url + '?variant=' + variant)
+        self.page.goto(self.url + 'play.html?variant=' + variant)
         if seed:
             state = {'answer':answer,'guesses':guesses or [],'players':['Alice','Bob','Chris','Dana','Eli'][:count],
                      'revealed':False,'pointsVersion':1,'startingPoints':balances or [5]*count,'scoringFrom':0,'selectedLength':len(answer)}
             self.page.evaluate('([key,state]) => localStorage.setItem(key,JSON.stringify(state))', [slug+'-v1',state])
             self.page.reload()
-        expect(self.page.locator(f'[data-variant="{variant}"]')).to_have_attribute('aria-pressed', 'true')
-        expect(self.page.locator('select#variantType')).to_have_count(0)
+        self.assertIn('play.html?variant=' + variant, self.page.url)
+        expect(self.page.locator('.variant-menu')).to_have_count(0)
 
     def guess(self, value):
         self.page.locator('#guess').fill(value); self.page.locator('#checkGuess').click()
@@ -129,24 +129,24 @@ class LetterDetectiveTests(unittest.TestCase):
         p=self.page
         self.open_variant('number','number-detective','123')
         self.guess('132')
-        p.locator('[data-variant="pinyin"]').click();p.wait_for_url('**variant=pinyin')
+        p.locator('.menu-back').click();p.get_by_role('button',name='Chinese pinyin',exact=True).click();p.wait_for_url('**play.html?variant=pinyin')
         expect(p.locator('#setupForm')).to_be_visible()
         p.locator('#puzzleLength').select_option('4')
         p.locator('#setupForm button[type=submit]').click()
         self.guess('zzzz')
-        p.locator('[data-variant="english"]').click();p.wait_for_url('**variant=english')
+        p.locator('.menu-back').click();p.get_by_role('button',name='English words',exact=True).click();p.wait_for_url('**play.html?variant=english')
         expect(p.locator('#puzzleLength')).to_have_value('8')
         p.locator('#setupForm button[type=submit]').click()
         self.guess('zzzzzzzz')
-        p.locator('[data-variant="number"]').click();p.wait_for_url('**variant=number')
+        p.locator('.menu-back').click();p.get_by_role('button',name='Numbers',exact=True).click();p.wait_for_url('**play.html?variant=number')
         expect(p.locator('#latestCode')).to_have_text('132')
         expect(p.locator('#latestRight')).to_have_text('1')
         expect(p.locator('#latestWrong')).to_have_text('2')
         self.assertEqual(self.balances(),['4 pts','5 pts'])
-        p.locator('[data-variant="pinyin"]').click();p.wait_for_url('**variant=pinyin')
+        p.locator('.menu-back').click();p.get_by_role('button',name='Chinese pinyin',exact=True).click();p.wait_for_url('**play.html?variant=pinyin')
         expect(p.locator('#latestCode')).to_have_text('zzzz')
         expect(p.locator('#variantWord')).to_have_text('Pinyin')
-        p.locator('[data-variant="english"]').click();p.wait_for_url('**variant=english')
+        p.locator('.menu-back').click();p.get_by_role('button',name='English words',exact=True).click();p.wait_for_url('**play.html?variant=english')
         expect(p.locator('#latestCode')).to_have_text('zzzzzzzz')
         expect(p.locator('#variantWord')).to_have_text('Word')
 
@@ -199,10 +199,35 @@ class LetterDetectiveTests(unittest.TestCase):
     def test_blocked_storage_still_plays(self):
         p=self.page
         p.add_init_script("Storage.prototype.getItem=()=>{throw Error('blocked')};Storage.prototype.setItem=()=>{throw Error('blocked')};Storage.prototype.removeItem=()=>{throw Error('blocked')}")
-        p.goto(self.url+'?variant=english')
+        p.goto(self.url+'play.html?variant=english')
         p.locator('#setupForm button[type=submit]').click()
         expect(p.locator('#guessForm')).to_be_visible()
         self.guess('zzzzzzzz')
         expect(p.locator('#history tr')).to_have_count(1)
+
+    def test_first_screen_is_only_three_buttons_then_separate_game(self):
+        p=self.page
+        p.goto(self.url)
+        p.evaluate("localStorage.setItem('number-detective-variant','english')")
+        p.reload()
+        self.assertEqual(p.locator('body').inner_text().splitlines(), ['Numbers','Chinese pinyin','English words'])
+        expect(p.locator('button')).to_have_count(3)
+        expect(p.locator('select, input, a')).to_have_count(0)
+        for width,height in [(320,740),(390,844),(768,1024),(1280,900)]:
+            p.set_viewport_size({'width':width,'height':height})
+            for button in p.locator('button').all():
+                box=button.bounding_box()
+                self.assertGreaterEqual(box['y'],0);self.assertLessEqual(box['y']+box['height'],height)
+            self.assertTrue(p.evaluate('document.documentElement.scrollWidth<=innerWidth'))
+        if not os.environ.get('NUMBER_GAME_URL'):
+            p.set_viewport_size({'width':390,'height':844})
+            p.screenshot(path='/tmp/detective-clean-menu.png')
+        for name,variant in [('Numbers','number'),('Chinese pinyin','pinyin'),('English words','english')]:
+            p.get_by_role('button',name=name,exact=True).click()
+            p.wait_for_url('**play.html?variant='+variant)
+            expect(p.locator('#setupForm')).to_be_visible()
+            expect(p.locator('.variant-menu, .variant-buttons')).to_have_count(0)
+            p.locator('.menu-back').click()
+            expect(p.locator('button')).to_have_count(3)
 
 if __name__=='__main__':unittest.main()
