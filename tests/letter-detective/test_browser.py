@@ -205,12 +205,14 @@ class LetterDetectiveTests(unittest.TestCase):
         self.guess('zzzzzzzz')
         expect(p.locator('#history tr')).to_have_count(1)
 
-    def test_first_screen_is_only_three_buttons_then_separate_game(self):
+    def test_first_screen_title_and_three_buttons_then_separate_game(self):
         p=self.page
         p.goto(self.url)
         p.evaluate("localStorage.setItem('number-detective-variant','english')")
         p.reload()
-        self.assertEqual(p.locator('body').inner_text().splitlines(), ['Numbers','Chinese pinyin','English words'])
+        expect(p.locator('h1')).to_contain_text('Number & Word')
+        expect(p.locator('h1')).to_contain_text('Detective.')
+        self.assertEqual(p.locator('form').inner_text().splitlines(), ['Numbers','Chinese pinyin','English words'])
         expect(p.locator('button')).to_have_count(3)
         expect(p.locator('select, input, a')).to_have_count(0)
         for width,height in [(320,740),(390,844),(768,1024),(1280,900)]:
