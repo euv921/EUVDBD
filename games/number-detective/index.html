@@ -6,12 +6,12 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=6">
-  <script src="./engine.js?v=6" defer></script>
-  <script src="./pinyin.js?v=6" defer></script>
-  <script src="./words.js?v=6" defer></script>
-  <script src="./letters-engine.js?v=6" defer></script>
-  <script src="./app.js?v=6" defer></script>
+  <link rel="stylesheet" href="./style.css?v=7">
+  <script src="./engine.js?v=7" defer></script>
+  <script src="./pinyin.js?v=7" defer></script>
+  <script src="./words.js?v=7" defer></script>
+  <script src="./letters-engine.js?v=7" defer></script>
+  <script src="./app.js?v=7" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -27,7 +27,7 @@
     </section>
     <div class="game-grid">
       <section class="guess-card" aria-labelledby="guessTitle">
-        <div class="variant-menu"><label for="variantType">Puzzle variant<select id="variantType"><option value="number">Numbers · 3 digits</option><option value="pinyin">Chinese pinyin</option><option value="english">English words · up to 8 letters</option></select></label></div>
+        <div class="variant-menu"><span class="eyebrow">PUZZLE VARIANT</span><div class="variant-buttons" role="group" aria-label="Puzzle variant"><button type="button" data-variant="number" aria-pressed="false"><strong aria-hidden="true">123</strong><span>Numbers</span></button><button type="button" data-variant="pinyin" aria-pressed="false"><strong aria-hidden="true">拼</strong><span>Chinese pinyin</span></button><button type="button" data-variant="english" aria-pressed="false"><strong aria-hidden="true">ABC</strong><span>English words</span></button></div></div>
         <form id="setupForm" class="player-setup">
           <span class="eyebrow">CHOOSE YOUR DETECTIVES</span>
           <h2>Solo or a friendly rivalry?</h2>

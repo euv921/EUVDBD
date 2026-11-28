@@ -1,7 +1,7 @@
 # Number & Word Detective
 
 One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
-The **Puzzle variant** menu selects Numbers, Chinese pinyin, or English words.
+The **Puzzle variant** menu has three buttons: Numbers, Chinese pinyin, and English words.
 Switching variants keeps each puzzle and its points saved independently.
 
 ## Variants
