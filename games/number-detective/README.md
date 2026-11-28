@@ -2,10 +2,10 @@
 
 One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
 The first screen has a Number & Word Detective title above three buttons:
-Numbers, Chinese pinyin, and English words. Each opens a separate Choose your detectives screen at
+Numbers, Chinese pinyin, and English words. Each opens a separate Set up your game screen at
 `play.html?variant=...`. Start game then opens the game screen
-(`screen=game`). The game has a prominent, sticky Back to detectives button;
-the detectives screen has a Variant menu link to return to the first screen.
+(`screen=game`). The game has a prominent, sticky Back to setup button;
+the setup screen has a Variant menu link to return to the first screen.
 Switching variants keeps each puzzle and its points saved independently.
 
 ## Variants
@@ -44,7 +44,7 @@ still wins and earns its reward. If everyone runs out, nobody wins.
 Starting the next round adds +5 to every remaining balance. Scores accumulate,
 not reset: Alice makes a wrong guess (5 → 4), Bob solves (5 → 4 → 9), then the
 next round begins at Alice 9 / Bob 14. A reveal ends without a win bonus.
-Starting a new game from the detectives screen starts a new competition. Solo has no point limit or cost.
+Starting a new game from the setup screen starts a new competition. Solo has no point limit or cost.
 Invalid/already-tried guesses neither advance the turn nor cost points.
 
 ## Saved progress and records
@@ -90,9 +90,9 @@ filters, points, mode switching, saved progress, and responsive layouts.
 
 ## Three-screen navigation
 
-The variant chooser, detectives setup, and gameplay are distinct views. The
+The variant chooser, game setup, and gameplay are distinct views. The
 setup screen never displays the board/history. The game never displays the
-player-count/name form or the old Change players link. Back to detectives is
+player-count/name form or the old Change players link. Back to setup is
 a prominent button in the sticky game header, so it remains available after
 scrolling down to results. It returns immediately without discarding progress.
 

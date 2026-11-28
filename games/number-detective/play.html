@@ -6,18 +6,18 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=10">
-  <script src="./engine.js?v=10" defer></script>
-  <script src="./pinyin.js?v=10" defer></script>
-  <script src="./words.js?v=10" defer></script>
-  <script src="./letters-engine.js?v=10" defer></script>
-  <script src="./app.js?v=10" defer></script>
+  <link rel="stylesheet" href="./style.css?v=11">
+  <script src="./engine.js?v=11" defer></script>
+  <script src="./pinyin.js?v=11" defer></script>
+  <script src="./words.js?v=11" defer></script>
+  <script src="./letters-engine.js?v=11" defer></script>
+  <script src="./app.js?v=11" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a id="toVariants" href="./?v=10" class="menu-back">← Variant menu</a>
-    <button id="backToDetectives" class="back-to-detectives" type="button" hidden>← Back to detectives</button>
-    <span id="screenStep" class="edition">STEP 2 · YOUR DETECTIVES</span>
+    <a id="toVariants" href="./?v=11" class="menu-back">← Variant menu</a>
+    <button id="backToDetectives" class="back-to-detectives" type="button" hidden>← Back to setup</button>
+    <span id="screenStep" class="edition">STEP 2 · GAME SETUP</span>
     <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
   </header>
   <main>
@@ -30,7 +30,7 @@
       <div class="guess-card">
         <form id="setupForm" class="player-setup">
           <span class="eyebrow">STEP 2 · SETUP</span>
-          <h2 id="setupTitle" tabindex="-1">Choose your detectives</h2>
+          <h2 id="setupTitle" tabindex="-1">Set up your game</h2>
         <div id="savedGamePanel" class="saved-game" hidden><p id="savedGameInfo"></p><button id="resumeGame" class="resume-game" type="button">Resume current game →</button></div>
           <label for="playerCount">Players <select id="playerCount"><option value="1">1 · Solo</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option><option value="5">5 players</option></select></label>
           <label id="lengthChoice" for="puzzleLength" class="length-choice">Letters per puzzle<select id="puzzleLength"></select></label>
@@ -78,7 +78,7 @@
         <div id="historyWrap" class="history-wrap" hidden>
           <table><caption class="sr-only">Guess history, newest first</caption><thead><tr><th scope="col">TRY</th><th scope="col">PLAYER</th><th scope="col">CODE</th><th scope="col">RIGHT SPOT</th><th scope="col">WRONG SPOT</th></tr></thead><tbody id="history"></tbody></table>
         </div>
-        <details class="howto"><summary>How to play <span aria-hidden="true">+</span></summary><p id="variantRules" class="rules"></p><p id="variantExample"></p><p id="variantInputRules"></p><p>Multiplayer starts with 5 points each. Each accepted guess costs 1, including a winning guess. Solving earns +5 immediately. Players at 0 sit out for the round; if everyone runs out, nobody wins. Starting the next round adds +5 to everyone’s remaining balance. Invalid or already-tried guesses do not cost points. Starting a new game from the detectives screen starts a fresh competition. Solo has no point limit.</p><p>The best record is the fewest total guesses across all players in a completed game. Each variant has its own record on this device, shared across solo, multiplayer, and supported lengths. Only a lower total replaces it. A reveal is not a solve. Switching variants keeps their puzzles and points separate.</p></details>
+        <details class="howto"><summary>How to play <span aria-hidden="true">+</span></summary><p id="variantRules" class="rules"></p><p id="variantExample"></p><p id="variantInputRules"></p><p>Multiplayer starts with 5 points each. Each accepted guess costs 1, including a winning guess. Solving earns +5 immediately. Players at 0 sit out for the round; if everyone runs out, nobody wins. Starting the next round adds +5 to everyone’s remaining balance. Invalid or already-tried guesses do not cost points. Starting a new game from the setup screen starts a fresh competition. Solo has no point limit.</p><p>The best record is the fewest total guesses across all players in a completed game. Each variant has its own record on this device, shared across solo, multiplayer, and supported lengths. Only a lower total replaces it. A reveal is not a solve. Switching variants keeps their puzzles and points separate.</p></details>
       </section>
     </div>
     </section>

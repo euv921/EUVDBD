@@ -71,7 +71,7 @@
     $('toVariants').hidden = inGame;
     $('backToDetectives').hidden = !inGame;
     document.body.classList.toggle('game-screen', inGame);
-    $('screenStep').textContent = inGame ? 'STEP 3 · SOLVE THE MYSTERY' : 'STEP 2 · YOUR DETECTIVES';
+    $('screenStep').textContent = inGame ? 'STEP 3 · SOLVE THE MYSTERY' : 'STEP 2 · GAME SETUP';
     $('savedGamePanel').hidden = !active;
     $('savedGameInfo').textContent = active ? `Saved game: ${players.join(', ')}${numeric ? '' : ` · ${answer.length} letters`}. Your guesses and points are kept.` : '';
     $('resumeGame').textContent = active && finished() ? 'View last result →' : 'Resume current game →';
