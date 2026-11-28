@@ -289,4 +289,20 @@ class LetterDetectiveTests(unittest.TestCase):
             self.assertEqual(state['selectedLength'],0)
             self.assertEqual(self.balances(),['5 pts','5 pts'])
 
+    def test_start_waits_for_initialization_before_submitting(self):
+        p=self.page
+        pending=[]
+        p.route('**/app.js?*', lambda route: pending.append(route))
+        p.goto(self.url+'play.html?variant=number', wait_until='commit')
+        expect(p.locator('#startCompetition')).to_be_disabled()
+        p.locator('#startCompetition').evaluate('(button)=>button.click()')
+        self.assertIn('variant=number',p.url)
+        self.assertTrue(pending)
+        pending[0].continue_()
+        expect(p.locator('#startCompetition')).to_be_enabled()
+        expect(p.locator('#setupTitle')).to_have_text('Set up your game')
+        p.locator('#startCompetition').click()
+        expect(p.locator('#gameScreen')).to_be_visible()
+        expect(p.locator('#backToDetectives')).to_have_text('← Back to setup')
+
 if __name__=='__main__':unittest.main()

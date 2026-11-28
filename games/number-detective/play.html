@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=11">
-  <script src="./engine.js?v=11" defer></script>
-  <script src="./pinyin.js?v=11" defer></script>
-  <script src="./words.js?v=11" defer></script>
-  <script src="./letters-engine.js?v=11" defer></script>
-  <script src="./app.js?v=11" defer></script>
+  <link rel="stylesheet" href="./style.css?v=12">
+  <script src="./engine.js?v=12" defer></script>
+  <script src="./pinyin.js?v=12" defer></script>
+  <script src="./words.js?v=12" defer></script>
+  <script src="./letters-engine.js?v=12" defer></script>
+  <script src="./app.js?v=12" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a id="toVariants" href="./?v=11" class="menu-back">← Variant menu</a>
+    <a id="toVariants" href="./?v=12" class="menu-back">← Variant menu</a>
     <button id="backToDetectives" class="back-to-detectives" type="button" hidden>← Back to setup</button>
     <span id="screenStep" class="edition">STEP 2 · GAME SETUP</span>
     <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
@@ -36,7 +36,7 @@
           <label id="lengthChoice" for="puzzleLength" class="length-choice">Letters per puzzle<select id="puzzleLength"></select></label>
           <div id="playerNames" class="player-names"></div>
           <p id="setupHint">Start with 5 points each. A guess costs 1; solving earns +5. Balances carry over between rounds.</p>
-          <button id="startCompetition" class="primary" type="submit">Start game <span aria-hidden="true">→</span></button>
+          <button id="startCompetition" class="primary" type="submit" disabled>Loading game…</button>
         </form>
       </div>
     </section>

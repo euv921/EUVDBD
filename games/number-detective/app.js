@@ -75,6 +75,7 @@
     $('savedGamePanel').hidden = !active;
     $('savedGameInfo').textContent = active ? `Saved game: ${players.join(', ')}${numeric ? '' : ` · ${answer.length} letters`}. Your guesses and points are kept.` : '';
     $('resumeGame').textContent = active && finished() ? 'View last result →' : 'Resume current game →';
+    $('startCompetition').disabled = false;
     $('startCompetition').textContent = active ? 'Start a new game →' : 'Start game →';
     $('wordLength').hidden = !active || finished() || numeric;
     if (active) {
