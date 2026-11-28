@@ -6,17 +6,18 @@
   <meta name="theme-color" content="#f7f5ed">
   <meta name="description" content="One detective game with numbers, Chinese pinyin, and English words up to 8 letters. Play solo or compete with 2–5 players.">
   <title>Number Detective · Three digits. Every clue counts.</title>
-  <link rel="stylesheet" href="./style.css?v=8">
-  <script src="./engine.js?v=8" defer></script>
-  <script src="./pinyin.js?v=8" defer></script>
-  <script src="./words.js?v=8" defer></script>
-  <script src="./letters-engine.js?v=8" defer></script>
-  <script src="./app.js?v=8" defer></script>
+  <link rel="stylesheet" href="./style.css?v=10">
+  <script src="./engine.js?v=10" defer></script>
+  <script src="./pinyin.js?v=10" defer></script>
+  <script src="./words.js?v=10" defer></script>
+  <script src="./letters-engine.js?v=10" defer></script>
+  <script src="./app.js?v=10" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a href="./" class="menu-back">← Variant menu</a>
-    <span class="edition">A LITTLE MYSTERY · PLAY ANYTIME</span>
+    <a id="toVariants" href="./?v=10" class="menu-back">← Variant menu</a>
+    <button id="backToDetectives" class="back-to-detectives" type="button" hidden>← Back to detectives</button>
+    <span id="screenStep" class="edition">STEP 2 · YOUR DETECTIVES</span>
     <button id="newGame" class="quiet" type="button" hidden>New puzzle ↗</button>
   </header>
   <main>
@@ -25,18 +26,24 @@
       <h1 id="title"><span id="variantWord" class="variant-word">Number</span> <span>Detective.</span></h1>
       <p id="tagline" class="tagline">Three digits. Every clue counts.</p>
     </section>
-    <div class="game-grid">
-      <section class="guess-card" aria-labelledby="guessTitle">
-
+    <section id="setupScreen" class="setup-screen" aria-labelledby="setupTitle">
+      <div class="guess-card">
         <form id="setupForm" class="player-setup">
-          <span class="eyebrow">CHOOSE YOUR DETECTIVES</span>
-          <h2>Solo or a friendly rivalry?</h2>
+          <span class="eyebrow">STEP 2 · SETUP</span>
+          <h2 id="setupTitle" tabindex="-1">Choose your detectives</h2>
+        <div id="savedGamePanel" class="saved-game" hidden><p id="savedGameInfo"></p><button id="resumeGame" class="resume-game" type="button">Resume current game →</button></div>
           <label for="playerCount">Players <select id="playerCount"><option value="1">1 · Solo</option><option value="2" selected>2 players</option><option value="3">3 players</option><option value="4">4 players</option><option value="5">5 players</option></select></label>
           <label id="lengthChoice" for="puzzleLength" class="length-choice">Letters per puzzle<select id="puzzleLength"></select></label>
           <div id="playerNames" class="player-names"></div>
           <p id="setupHint">Start with 5 points each. A guess costs 1; solving earns +5. Balances carry over between rounds.</p>
-          <button class="primary" type="submit">Start game <span aria-hidden="true">→</span></button>
+          <button id="startCompetition" class="primary" type="submit">Start game <span aria-hidden="true">→</span></button>
         </form>
+      </div>
+    </section>
+    <section id="gameScreen" aria-label="Game" hidden>
+    <div class="game-grid">
+      <section class="guess-card" aria-labelledby="guessTitle">
+
         <div id="playHeader" class="card-top" hidden><span class="eyebrow" id="guessTitle">YOUR NEXT THEORY</span><span class="case-number" id="attemptLabel">GUESS 01</span></div>
         <div id="turnInfo" class="turn-info" hidden><strong id="currentPlayer"></strong><span id="roundLabel"></span></div>
         <section id="pointsBoard" class="points-board" aria-label="Player points" hidden><span class="eyebrow">POINTS · CARRY OVER EACH ROUND</span><ul id="pointsList"></ul></section>
@@ -62,7 +69,6 @@
           <button id="playAgain" type="button" class="primary">Play another puzzle ↗</button>
         </div>
         <button id="reveal" hidden type="button" class="text-button">Stuck? Reveal the code</button>
-        <button id="changePlayers" type="button" class="text-button" hidden>Change players</button>
       </section>
       <section class="notebook" aria-labelledby="historyTitle">
         <div class="notebook-heading"><h2 id="historyTitle">Your case notes</h2><span id="guessCount">0 guesses</span></div>
@@ -72,9 +78,10 @@
         <div id="historyWrap" class="history-wrap" hidden>
           <table><caption class="sr-only">Guess history, newest first</caption><thead><tr><th scope="col">TRY</th><th scope="col">PLAYER</th><th scope="col">CODE</th><th scope="col">RIGHT SPOT</th><th scope="col">WRONG SPOT</th></tr></thead><tbody id="history"></tbody></table>
         </div>
-        <details class="howto"><summary>How to play <span aria-hidden="true">+</span></summary><p id="variantRules" class="rules"></p><p id="variantExample"></p><p id="variantInputRules"></p><p>Multiplayer starts with 5 points each. Each accepted guess costs 1, including a winning guess. Solving earns +5 immediately. Players at 0 sit out for the round; if everyone runs out, nobody wins. Starting the next round adds +5 to everyone’s remaining balance. Invalid or already-tried guesses do not cost points. Changing players starts a fresh competition. Solo has no point limit.</p><p>The best record is the fewest total guesses across all players in a completed game. Each variant has its own record on this device, shared across solo, multiplayer, and supported lengths. Only a lower total replaces it. A reveal is not a solve. Switching variants keeps their puzzles and points separate.</p></details>
+        <details class="howto"><summary>How to play <span aria-hidden="true">+</span></summary><p id="variantRules" class="rules"></p><p id="variantExample"></p><p id="variantInputRules"></p><p>Multiplayer starts with 5 points each. Each accepted guess costs 1, including a winning guess. Solving earns +5 immediately. Players at 0 sit out for the round; if everyone runs out, nobody wins. Starting the next round adds +5 to everyone’s remaining balance. Invalid or already-tried guesses do not cost points. Starting a new game from the detectives screen starts a fresh competition. Solo has no point limit.</p><p>The best record is the fewest total guesses across all players in a completed game. Each variant has its own record on this device, shared across solo, multiplayer, and supported lengths. Only a lower total replaces it. A reveal is not a solve. Switching variants keeps their puzzles and points separate.</p></details>
       </section>
     </div>
+    </section>
     <footer class="page-footer"><a class="library" href="../../">← Game library</a><span>INSPIRED BY BULLS & COWS</span><span>No timer. Just your next good idea.</span></footer>
   </main>
   <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmDetail"><h2 id="confirmTitle"></h2><p id="confirmDetail"></p><div class="dialog-actions"><button id="cancelAction" type="button" class="quiet">Keep playing</button><button id="confirmAction" type="button" class="primary">Continue</button></div></dialog>

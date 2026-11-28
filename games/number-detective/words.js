@@ -6,7 +6,7 @@
   "first": "Word",
   "tagline": "Every letter leaves a clue.",
   "type": "english",
-  "defaultLength": 8,
+  "defaultLength": 0,
   "emoji": "📚",
   "entries": [
     {

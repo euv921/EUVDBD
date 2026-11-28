@@ -6,7 +6,7 @@
   "first": "Pinyin",
   "tagline": "A little pinyin. A big discovery.",
   "type": "pinyin",
-  "defaultLength": 4,
+  "defaultLength": 0,
   "emoji": "🀄",
   "entries": [
     {

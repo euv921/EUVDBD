@@ -36,11 +36,16 @@ class NumberDetectiveTests(unittest.TestCase):
         self.errors = []
         self.page.on('pageerror', lambda error: self.errors.append(str(error)))
         self.page.add_init_script("if (!localStorage.getItem('number-detective-no-seed') && !localStorage.getItem('number-detective-v1')) localStorage.setItem('number-detective-v1', JSON.stringify({answer:'123', guesses:[], revealed:false}))")
-        self.page.goto(self.url + "play.html?variant=number")
+        self.page.goto(self.url + "play.html?variant=number&screen=game")
 
     def tearDown(self):
         try: self.assertEqual(self.errors, [])
         finally: self.page.close()
+
+    def start_from_setup(self):
+        self.page.locator('#setupForm button[type=submit]').click()
+        if self.page.locator('#confirmDialog').is_visible():
+            self.page.locator('#confirmAction').click()
 
     def guess(self, value):
         self.page.locator('#guess').fill(value)
@@ -106,11 +111,11 @@ class NumberDetectiveTests(unittest.TestCase):
             p.evaluate('(value) => localStorage.setItem("number-detective-v1", value)', state)
             p.reload()
             expect(p.locator('#setupForm')).to_be_visible()
-            p.locator('#setupForm button[type=submit]').click()
+            self.start_from_setup()
             expect(p.locator('#guessForm')).to_be_visible()
             expect(p.locator('#history tr')).to_have_count(0)
         p.add_init_script("Storage.prototype.getItem=()=>{throw Error('blocked')};Storage.prototype.setItem=()=>{throw Error('blocked')}")
-        p.reload(); p.locator('#setupForm button[type=submit]').click(); self.guess('123')
+        p.reload(); self.start_from_setup(); self.guess('123')
         expect(p.locator('#history tr')).to_have_count(1)
 
     def test_layout_and_library_link(self):
@@ -189,20 +194,20 @@ class NumberDetectiveTests(unittest.TestCase):
         p.reload()
         expect(p.locator('#playerCount')).to_have_value('5')
         expect(p.locator('#playerNames input').nth(4)).to_have_value('Eli')
-        p.locator('#setupForm button[type=submit]').click()
+        self.start_from_setup()
         expect(p.locator('#currentPlayer')).to_have_text('Alice’s turn')
-        p.locator('#changePlayers').click()
+        p.locator('#backToDetectives').click()
         p.locator('#playerCount').select_option('1')
-        p.locator('#setupForm button[type=submit]').click()
+        self.start_from_setup()
         expect(p.locator('#currentPlayer')).to_have_text('Your turn')
         expect(p.locator('#roundLabel')).to_have_text('SOLO')
 
     def test_duplicate_names_and_multiplayer_reveal(self):
         p = self.page
-        p.locator('#changePlayers').click()
+        p.locator('#backToDetectives').click()
         p.locator('#playerCount').select_option('2')
         for input in p.locator('#playerNames input').all(): input.fill('Sam')
-        p.locator('#setupForm button[type=submit]').click()
+        self.start_from_setup()
         expect(p.locator('#currentPlayer')).to_have_text('Sam (1)’s turn')
         self.assertEqual(p.evaluate("JSON.parse(localStorage.getItem('number-detective-v1')).players"), ['Sam (1)', 'Sam (2)'])
         p.locator('#reveal').click(); p.locator('#confirmAction').click()
@@ -213,13 +218,16 @@ class NumberDetectiveTests(unittest.TestCase):
         p = self.page
         self.seed_players(5)
         self.guess('456')
-        p.locator('#changePlayers').click(); p.locator('#cancelAction').click()
+        p.locator('#backToDetectives').click()
+        expect(p.locator('#setupForm')).to_be_visible()
+        expect(p.locator('#gameScreen')).to_be_hidden()
+        p.locator('#resumeGame').click()
         expect(p.locator('#currentPlayer')).to_have_text('Bob’s turn')
-        p.locator('#changePlayers').click(); p.locator('#confirmAction').click()
+        p.locator('#backToDetectives').click()
         expect(p.locator('#setupForm')).to_be_visible()
         p.locator('#playerNames input').nth(0).fill('<b>Alice</b>')
         p.locator('#playerNames input').nth(1).fill('VeryLongPlayerNameXX')
-        p.locator('#setupForm button[type=submit]').click()
+        self.start_from_setup()
         expect(p.locator('#currentPlayer')).to_have_text('<b>Alice</b>’s turn')
         expect(p.locator('#currentPlayer b')).to_have_count(0)
         self.guess('456')
@@ -355,8 +363,8 @@ class NumberDetectiveTests(unittest.TestCase):
         expect(p.locator('#history tr')).to_have_count(12)
         self.guess('123')
         self.assertEqual(self.balances(), ['9 pts', '5 pts'])
-        p.locator('#changePlayers').click()
-        p.locator('#setupForm button[type=submit]').click()
+        p.locator('#backToDetectives').click()
+        self.start_from_setup()
         self.assertEqual(self.balances(), ['5 pts', '5 pts'])
 
 if __name__ == '__main__': unittest.main()

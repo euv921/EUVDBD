@@ -2,8 +2,10 @@
 
 One browser game at https://euv921.github.io/EUVDBD/games/number-detective/.
 The first screen has a Number & Word Detective title above three buttons:
-Numbers, Chinese pinyin, and English words. Each opens its own game screen at `play.html?variant=...`.
-The game header’s Variant menu link returns to that clean first screen.
+Numbers, Chinese pinyin, and English words. Each opens a separate Choose your detectives screen at
+`play.html?variant=...`. Start game then opens the game screen
+(`screen=game`). The game has a prominent, sticky Back to detectives button;
+the detectives screen has a Variant menu link to return to the first screen.
 Switching variants keeps each puzzle and its points saved independently.
 
 ## Variants
@@ -11,12 +13,12 @@ Switching variants keeps each puzzle and its points saved independently.
 - **Numbers:** the original three distinct digits, including leading zero.
   The existing numeric rules module and saved games are preserved.
 - **Chinese pinyin:** one tone-free syllable, such as `mian`. Choose 2–6 letters
-  or Any length; the default is 4. Answers are a curated bank of standard
+  or Any length; Any length is the default for new games. Answers are a curated bank of standard
   syllables without tone marks/numbers. Syllables requiring explicit ü/v are
   omitted. At round end, show one matching Chinese character and meaning;
   this is an example homophone, not every possible meaning.
 - **English words:** curated common words of 3–8 letters, including `dinosaur`.
-  Choose a length or Any length; the default is 8. No answer exceeds 8 letters.
+  Choose a length or Any length; Any length is the default for new games. No answer exceeds 8 letters.
 
 The letter count is shown before guessing. Letter guesses accept uppercase,
 normalize to lowercase, allow repeated letters, and must match the exact length.
@@ -42,7 +44,7 @@ still wins and earns its reward. If everyone runs out, nobody wins.
 Starting the next round adds +5 to every remaining balance. Scores accumulate,
 not reset: Alice makes a wrong guess (5 → 4), Bob solves (5 → 4 → 9), then the
 next round begins at Alice 9 / Bob 14. A reveal ends without a win bonus.
-Changing players starts a new competition. Solo has no point limit or cost.
+Starting a new game from the detectives screen starts a new competition. Solo has no point limit or cost.
 Invalid/already-tried guesses neither advance the turn nor cost points.
 
 ## Saved progress and records
@@ -85,3 +87,19 @@ GitHub Actions runs both suites in Chromium and WebKit. The numeric suite
 covers every valid three-digit answer/guess pair; the letter suite checks
 multiset scoring exhaustively over a small alphabet, both banks and length
 filters, points, mode switching, saved progress, and responsive layouts.
+
+## Three-screen navigation
+
+The variant chooser, detectives setup, and gameplay are distinct views. The
+setup screen never displays the board/history. The game never displays the
+player-count/name form or the old Change players link. Back to detectives is
+a prominent button in the sticky game header, so it remains available after
+scrolling down to results. It returns immediately without discarding progress.
+
+A saved game can be resumed from setup without resetting points or charging a
+new-round bonus. Starting a new competition asks before replacing that saved
+game, and begins with 5 points each. Browser Back/Forward also moves between
+setup and game without altering balances. New letter competitions default to
+Any length even if an older preference used a fixed count. A saved game's
+length choice is snapshotted separately from setup controls, so resuming and
+replaying retains the original fixed or Any-length setting.
